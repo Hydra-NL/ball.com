@@ -5,7 +5,7 @@ module.exports = {
   register(req, res, next) {
     const customerProps = req.body;
 
-    customerService.customerExists(req.body).then((bool) => {
+    customerService.customerExists(customerProps.email).then((bool) => {
       console.log(bool);
       if (bool == true) {
         res.status(409).json({ message: "Email is already in use" });
@@ -19,13 +19,19 @@ module.exports = {
 
   login(req, res, next) {
     customerService.authenticate(req.body).then((customer) => {
-      customer ? res.json(customer) : res.status(400).json({ message: "Email or password is incorrect" });
-      console.log("Response: " + res);
+      if (customer) {
+        delete customer.hash;
+        res.json(customer);
+      } else {
+        res.status(400).json({ message: "Email or password is incorrect" });
+      }
     });
   },
 
   index(req, res, next) {
-    Customer.findAll({})
+    Customer.findAll({
+      attributes: { exclude: ["hash"] },
+    })
       .then((customers) => {
         res.send(customers);
       })
@@ -38,7 +44,9 @@ module.exports = {
   indexOne(req, res, next) {
     const customerId = req.params.id;
 
-    Customer.findByPk(customerId)
+    Customer.findByPk(customerId, {
+      attributes: { exclude: ["hash"] },
+    })
       .then((customer) => {
         res.send(customer);
       })
@@ -49,6 +57,6 @@ module.exports = {
   },
 
   greeting(req, res) {
-    res.send({ hi: "there" });
+    res.send({ Hello: "World!" });
   },
 };

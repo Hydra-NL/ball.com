@@ -9,10 +9,8 @@ module.exports = {
 
 async function authenticate({ email, password }) {
   const customer = await Customer.findOne({ email });
-  console.log(customer);
   if (customer && password == customer.hash) {
     const token = jwt.sign({ sub: customer._id }, config.secret, { expiresIn: "7d" });
-    console.log("Token: " + token);
     return {
       ...customer.toJSON(),
       token,
@@ -22,11 +20,12 @@ async function authenticate({ email, password }) {
 }
 
 async function customerExists(customerData) {
-  if (!customerData || !customerData.email) {
+  if (!customerData) {
     return false;
   }
-  const { email } = customerData;
-  const customer = await Customer.findOne({ email });
+  const customer = await Customer.findOne({
+    where: { email: customerData },
+  });
   if (customer == null) {
     return false;
   }
