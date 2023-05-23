@@ -6,7 +6,6 @@ module.exports = {
     const customerProps = req.body;
 
     customerService.customerExists(customerProps.email).then((bool) => {
-      console.log(bool);
       if (bool == true) {
         res.status(409).json({ message: "Email is already in use" });
       } else {

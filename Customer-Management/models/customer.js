@@ -67,6 +67,10 @@ const Customer = sequelize.define(
         notEmpty: { msg: "Password is required" },
       },
     },
+    shoppingCart: {
+      type: DataTypes.JSON,
+      defaultValue: [],
+    },
   },
   {
     timestamps: false,

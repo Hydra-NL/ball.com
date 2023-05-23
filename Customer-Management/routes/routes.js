@@ -15,5 +15,11 @@ module.exports = (app) => {
   app.post("/api/questions", QuestionController.create);
   app.get("/api/questions", QuestionController.index);
   app.get("/api/questions/:id", QuestionController.indexOne);
-  app.put("/api/questions/:id/answered", QuestionController.setAnswered);
+  app.put("/api/questions/:id", QuestionController.setAnswered);
+
+  // Shopping Cart routes
+  app.put("/api/shopping-cart", ShoppingCartController.addItem);
+  app.get("/api/shopping-cart/:id", ShoppingCartController.index);
+  app.put("/api/shopping-cart/remove", ShoppingCartController.removeItem);
+  app.delete("/api/shopping-cart/:id", ShoppingCartController.emptyCart);
 };
