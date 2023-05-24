@@ -25,12 +25,12 @@ const Customer = sequelize.define(
         notEmpty: { msg: "Last name is required" },
       },
     },
-    adress: {
+    address: {
       type: DataTypes.STRING(50),
       allowNull: false,
       validate: {
-        notNull: { msg: "Adress is required" },
-        notEmpty: { msg: "Adress is required" },
+        notNull: { msg: "Address is required" },
+        notEmpty: { msg: "Address is required" },
       },
     },
     city: {
