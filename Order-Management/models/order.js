@@ -1,5 +1,17 @@
 const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = new Sequelize("sqlite::memory:");
+
+// Configure the MySQL database connection
+const sequelize = new Sequelize(
+  'ballcom', // database name
+  'administrator', // username
+  'password123', // password
+  {
+    host: 'localhost', // MySQL container hostname (if running on the same machine as this app, or the IP address of the machine running the MySQL container, if running on separate machines)
+    port: 3306,
+    dialect: "mysql",
+    logging: false,
+  }
+);
 
 const Order = sequelize.define(
   "Order",
