@@ -1,6 +1,7 @@
 const Order = require("../models/order");
 const orderService = require("../services/order_service");
 const uuid = require("uuid");
+const rabbitMQManager = require('../controllers/rabbitMQ_controller');
 
 module.exports = {
 
@@ -78,17 +79,8 @@ module.exports = {
         // check if product has product_id and quantity
         if (!product.productId || !product.quantity) res.status(400).json({ message: `Invalid product found in order: ${product}` });
         products.push(product);
-        Order.create({
-          orderId: orderId,
-          customerId: customerId,
-          productId: product.productId,
-          quantity: product.quantity,
-        })
-          .catch((err) => {
-            console.error(err);
-            next(err);
-          });
       });
+      rabbitMQManager.addMessage('test');
       res.status(201).json({ message: "Successfully created order", products: products, orderId: orderId });
     }
   },

@@ -11,4 +11,4 @@ COPY init.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/init.sh
 
 # Start RabbitMQ en maak de queue indien nodig
-CMD ["sh", "-c", "rabbitmq-server & sleep 10 && init.sh && tail -F /var/log/rabbitmq/rabbit@localhost.log"]
+CMD ["sh", "-c", "rabbitmq-server & sleep 10 && tail -F /var/log/rabbitmq/rabbit@localhost.log"]

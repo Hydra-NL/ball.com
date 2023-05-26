@@ -1,6 +1,6 @@
 #!/bin/sh
 
-QUEUE_NAME="ball_queue"
+QUEUE_NAME="order_queue"
 
 # Wacht tot RabbitMQ klaar is om verbindingen te accepteren
 while ! rabbitmqctl status; do sleep 5; done
