@@ -1,7 +1,7 @@
 const Order = require("../models/order");
 const orderService = require("../services/order_service");
 const uuid = require("uuid");
-const rabbitMQManager = require('../controllers/rabbitMQ_controller');
+const rabbitMQManager = require('./rabbitMQ_publisher');
 
 module.exports = {
 
@@ -79,8 +79,11 @@ module.exports = {
         // check if product has product_id and quantity
         if (!product.productId || !product.quantity) res.status(400).json({ message: `Invalid product found in order: ${product}` });
         products.push(product);
+        // set orderDate to string of current date
+        orderProps.orderDate = new Date().toISOString().slice(0, 10);
+        // add the sql query to create the order to the queue
+        rabbitMQManager.addMessage(`INSERT INTO Orders (orderId, customerId, productId, quantity, orderDate) VALUES ('${orderId}', ${customerId}, ${product.productId}, ${product.quantity}, '${orderProps.orderDate}')`)
       });
-      rabbitMQManager.addMessage('test');
       res.status(201).json({ message: "Successfully created order", products: products, orderId: orderId });
     }
   },

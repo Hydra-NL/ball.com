@@ -30,8 +30,7 @@ const Order = sequelize.define(
       allowNull: false,
     },
     orderDate: {
-      type: DataTypes.DATE,
-      defaultValue: Sequelize.NOW,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     orderStatus: {
@@ -57,6 +56,12 @@ sequelize
   .sync({ force: false })
   .then(() => {
     console.log("Order table created successfully!");
+    // print all tables in the database
+    sequelize
+      .query("SHOW TABLES")
+      .then((result) => {
+        console.log(result[0]);
+      })
   })
   .catch((err) => {
     console.log(err);
