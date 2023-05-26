@@ -7,12 +7,18 @@ module.exports = {
   indexOne(req, res, next) {
     const orderId = req.params.id;
 
-    Order.findByPk(orderId)
-      .then((order) => {
-        // check if customer is same as customer in token
-        if (order.customerId != req.customerId) res.status(401).json({ message: "Unauthorized" });
-        else res.send(order);
-      })
+    Order.findAll({ where: { orderId: orderId } })
+      .then((orders) => {
+        // group products with same orderId together
+        const groupedOrders = {};
+        orders.forEach((order) => {
+          if (!groupedOrders[order.orderId]) groupedOrders[order.orderId] = [];
+          groupedOrders[order.orderId].push(order);
+        }
+        );
+        res.send(groupedOrders);
+      }
+      )
       .catch((err) => {
         console.error(err);
         next(err);
@@ -22,7 +28,16 @@ module.exports = {
   index(req, res, next) {
     const customerId = req.customerId;
     Order.findAll({ where: { customerId: customerId } })
-      .then((orders) => res.send(orders))
+      .then((orders) => {
+        // group products with same orderId together
+        const groupedOrders = {};
+        orders.forEach((order) => {
+          if (!groupedOrders[order.orderId]) groupedOrders[order.orderId] = [];
+          groupedOrders[order.orderId].push(order);
+        }
+        );
+        res.send(groupedOrders);
+      })
       .catch((err) => {
         console.error(err);
         next(err);
@@ -56,29 +71,25 @@ module.exports = {
     //   { productId: 2, quantity: 1 }
     // ]
     let orderId = uuid.v4();
-    // // check if there is already an order with this orderId
-    // while (orderService.orderExists(orderId)) {
-    //   orderId = uuid.v4();
-    // }
     if (!orderProps.products) res.status(400).json({ message: "No products provided" });
     else {
-      const orders = [];
+      const products = [];
       orderProps.products.forEach((product) => {
         // check if product has product_id and quantity
         if (!product.productId || !product.quantity) res.status(400).json({ message: `Invalid product found in order: ${product}` });
+        products.push(product);
         Order.create({
           orderId: orderId,
           customerId: customerId,
           productId: product.productId,
           quantity: product.quantity,
         })
-          .then((order) => orders.push(order))
           .catch((err) => {
             console.error(err);
             next(err);
           });
       });
-      res.status(201).json({ message: "Successfully created order", orders: orders, orderId: orderId });
+      res.status(201).json({ message: "Successfully created order", products: products, orderId: orderId });
     }
   },
 
@@ -86,17 +97,19 @@ module.exports = {
   updateOrder(req, res, next) {
     const orderId = req.params.id;
     const orderProps = req.body;
-    Order.findByPk(orderId)
-      .then((order) => {
+    Order.findAll({ where: { orderId: orderId } })
+      .then((orders) => {
         // check if customer is same as customer in token
-        if (order.customerId != req.customerId) res.status(401).json({ message: "Unauthorized" });
+        if (orders[0].customerId != req.customerId) res.status(401).json({ message: "Unauthorized" });
         else {
-          order.update(orderProps)
-            .then((order) => res.status(200).json({ message: "Successfully updated order", order: order }))
-            .catch((err) => {
-              console.error(err);
-              next(err);
-            });
+          orders.forEach((order) => {
+            order.update(orderProps)
+              .catch((err) => {
+                console.error(err);
+                next(err);
+              });
+          });
+          res.status(200).json({ message: "Successfully updated order", order: orders });
         }
       })
       .catch((err) => {
