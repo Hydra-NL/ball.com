@@ -29,7 +29,7 @@ class RabbitMQManager {
 
   addMessage(message) {
     if (!this.channel) {
-      console.log("Channel not yet initialized. Try again.");
+      console.log("[=>] Channel not yet initialized. Try again.");
       return;
     }
 
@@ -38,7 +38,7 @@ class RabbitMQManager {
       persistent: true
     });
 
-    console.log('[x] Sent %s to queue', message);
+    console.log('[=>] Sent %s to queue', message);
   }
 }
 
