@@ -7,7 +7,7 @@ class RabbitMQManager {
   }
 
   setupConnection() {
-    amqp.connect('amqp://localhost', (errorConnect, connection) => {
+    amqp.connect('amqp://rabbitmq-queue', (errorConnect, connection) => {
       if (errorConnect) {
         throw errorConnect;
       }

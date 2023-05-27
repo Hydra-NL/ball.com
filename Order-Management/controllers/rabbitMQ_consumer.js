@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 class RabbitMQConsumer {
     constructor() {
         this.pool = mysql.createPool({
-            host: "localhost",
+            host: "rabbitmq-queue",
             user: "administrator",
             password: "password123",
             database: "ballcom",
@@ -59,7 +59,7 @@ class RabbitMQConsumer {
     }
 
     listenToQueue() {
-        amqp.connect('amqp://localhost', (errorConnect, connection) => {
+        amqp.connect('amqp://rabbitmq-queue', (errorConnect, connection) => {
             if (errorConnect) {
                 console.error("[<=] Error connecting to RabbitMQ: ", errorConnect.message);
                 setTimeout(() => this.listenToQueue(), 5000);

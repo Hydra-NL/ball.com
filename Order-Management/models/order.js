@@ -6,7 +6,7 @@ const sequelize = new Sequelize(
   'administrator', // username
   'password123', // password
   {
-    host: 'localhost', // MySQL container hostname (if running on the same machine as this app, or the IP address of the machine running the MySQL container, if running on separate machines)
+    host: 'mysql-standalone', // MySQL container hostname (if running on the same machine as this app, or the IP address of the machine running the MySQL container, if running on separate machines)
     port: 3306,
     dialect: "mysql",
     logging: false,
