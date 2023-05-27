@@ -1,6 +1,8 @@
 version: "3"
 services:
   mysql-standalone:
+    networks:
+      - ballcom
     image: mysql:5.7
     container_name: mysql-standalone
     restart: always
@@ -15,6 +17,8 @@ services:
       - mysql-data:/var/lib/mysql
 
   rabbitmq:
+    networks:
+      - ballcom
     image: rabbitmq:3.7-management
     container_name: rabbitmq-queue
     restart: always
@@ -27,6 +31,32 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
+  order-management:
+    networks:
+      - ballcom
+    build: ./Order-Management
+    container_name: order-management
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      - mysql-standalone
+      - rabbitmq
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql-standalone
+      MYSQL_PORT: 3306
+      MYSQL_USER: administrator
+      MYSQL_PASSWORD: password123
+      MYSQL_DATABASE: ballcom
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+
 volumes:
   mysql-data:
   rabbitmq-data:
+
+networks:
+  ballcom:
