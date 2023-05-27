@@ -9,6 +9,7 @@ module.exports = (app) => {
   app.post("/api/auth/register", CustomerController.register);
   app.get("/api/customers", CustomerController.index);
   app.get("/api/customers/:id", CustomerController.indexOne);
+  app.delete("/api/customers/:id", CustomerController.remove);
 
   // Shopping Cart routes
   app.put("/api/shopping-cart", ShoppingCartController.addItem);
