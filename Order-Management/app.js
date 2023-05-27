@@ -1,19 +1,13 @@
 const express = require("express");
-const supplierRoute = require("./routes/supplier_routes");
-const productRoute = require("./routes/product_routes");
+const routes = require("./routes/routes");
 const bodyParser = require("body-parser");
 const app = express();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3000;
 
-const RabbitMQConsumer = require("./rabbitmq/rabbitMQ_consumer");
+const RabbitMQConsumer = require('./controllers/rabbitMQ_consumer');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-const routes = (app) => {
-  supplierRoute(app);
-  productRoute(app);
-};
 
 routes(app);
 
