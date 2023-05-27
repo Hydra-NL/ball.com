@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 class RabbitMQConsumer {
     constructor() {
         this.pool = mysql.createPool({
-            host: "rabbitmq-queue",
+            host: "mysql-standalone",
             user: "administrator",
             password: "password123",
             database: "ballcom",
