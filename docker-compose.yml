@@ -77,6 +77,29 @@ services:
       RABBITMQ_USERNAME: guest
       RABBITMQ_PASSWORD: guest
 
+  supplier-management:
+    networks:
+      - ballcom
+    build: ./Supplier-Management
+    container_name: supplier-management
+    restart: always
+    ports:
+      - 3002:3002
+    depends_on:
+      - mysql-standalone
+      - rabbitmq
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql-standalone
+      MYSQL_PORT: 3306
+      MYSQL_USER: administrator
+      MYSQL_PASSWORD: password123
+      MYSQL_DATABASE: ballcom
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+
 volumes:
   mysql-data:
   rabbitmq-data:
