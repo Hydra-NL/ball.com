@@ -1,12 +1,22 @@
 const Question = require("../models/question");
+const Customer = require("../models/customer");
 
 module.exports = {
   create(req, res, next) {
     const questionProps = req.body;
 
-    Question.create(questionProps)
+    // Check if the customer exists
+    Customer.findByPk(req.body.customerId)
+      .then((customer) => {
+        if (!customer) {
+          return res.status(404).json({ error: "Customer not found" });
+        }
 
-      .then((question) => res.send(question))
+        // Customer exists, create the question
+        Question.create(questionProps)
+          .then((question) => res.send(question))
+          .catch(next);
+      })
       .catch(next);
   },
 

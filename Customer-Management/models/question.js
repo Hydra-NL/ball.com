@@ -21,6 +21,11 @@ const Question = sequelize.define(
         notEmpty: { msg: "Question is required" },
       },
     },
+    customerId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notNull: { msg: "Customer ID is required" } },
+    },
     answer: {
       type: DataTypes.STRING(500),
       allowNull: true,
