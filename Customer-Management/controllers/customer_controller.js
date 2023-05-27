@@ -55,6 +55,45 @@ module.exports = {
       });
   },
 
+  remove(req, res, next) {
+    const customerId = req.params.id;
+
+    Customer.findOne({
+      where: {
+        id: customerId,
+      },
+    })
+      .then((customer) => {
+        if (!customer) {
+          // If customer not found, send an error response in the specified format
+          return res.status(404).json({
+            error: "Customer not found",
+          });
+        }
+
+        const customerName = customer.firstName; // Assuming the name field exists in the Customer model
+
+        Customer.destroy({
+          where: {
+            id: customerId,
+          },
+        })
+          .then(() => {
+            res.json({
+              message: `Customer "${customerName}" has been removed`,
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            next(err);
+          });
+      })
+      .catch((err) => {
+        console.error(err);
+        next(err);
+      });
+  },
+
   greeting(req, res) {
     res.send({ Hello: "World!" });
   },
