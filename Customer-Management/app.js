@@ -4,6 +4,8 @@ const bodyParser = require("body-parser");
 const app = express();
 const port = process.env.PORT || 3001;
 
+const RabbitMQConsumer = require("./controllers/rabbitMQ_consumer");
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -14,6 +16,8 @@ app.use((err, res) => {
 });
 
 app.listen(port, () => {
+  const consumer = new RabbitMQConsumer();
+  consumer.listenToQueue();
   console.log(`Server running at http://localhost:${port}`);
 });
 

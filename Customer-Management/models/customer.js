@@ -21,6 +21,10 @@ const Customer = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    customerId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     firstName: {
       type: DataTypes.STRING(50),
       allowNull: false,
@@ -64,7 +68,7 @@ const Customer = sequelize.define(
     email: {
       type: DataTypes.STRING(50),
       allowNull: false,
-      unique: true,
+      isUnique: true,
       validate: {
         notNull: { msg: "Email is required" },
         notEmpty: { msg: "Email is required" },
