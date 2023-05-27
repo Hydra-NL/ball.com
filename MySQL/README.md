@@ -1,8 +1,8 @@
 ## MySQL draaien via Docker
 
 1. Navigeer naar de MySQL folder
-2. Build de MySQL Docker image: `docker build -t mysql-image .`
-3. Start een Docker-container met de nieuwe image: `docker run -d --name mysql-container -v /path/to/host/mysql-data:/var/lib/mysql -p 3306:3306 mysql-image`
+2. Gebruik de command `docker-compose -f docker-compose.yml up`
+3. De container, image en persistent volume worden nu automatisch aangemaakt
 4. MySQL is nu toegankelijk met de volgende gegevens:
 
 - Database: ballcom
