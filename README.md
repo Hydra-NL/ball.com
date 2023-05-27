@@ -1,6 +1,6 @@
 ## MySQL & RabbitMQ draaien via Docker
 
-1. Gebruik de command `docker-compose -f docker-compose.yml up` in de root folder
+1. Gebruik de command `docker-compose -f docker-compose.yml up --build --force-recreate` in de root folder
 2. De container, image en persistent volume worden nu automatisch aangemaakt
 3. MySQL is nu toegankelijk met de volgende gegevens:
 
