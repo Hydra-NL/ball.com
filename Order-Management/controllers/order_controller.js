@@ -8,10 +8,13 @@ const jwt = require("jsonwebtoken");
 module.exports = {
 
   indexOne(req, res, next) {
+    const customerId = req.customerId;
     const orderId = req.params.id;
 
-    Order.findAll({ where: { orderId: orderId } })
+    Order.findAll({ where: { orderId: orderId, customerId: customerId } })
       .then((orders) => {
+        // if no orders found, return message
+        if (orders.length == 0) return res.status(404).json({ message: "No order found" });
         // group products with same orderId together
         const groupedOrders = {};
         orders.forEach((order) => {
@@ -58,7 +61,8 @@ module.exports = {
         if (err) {
           return res.status(401).json({ message: "Invalid token" });
         } else {
-          console.log(decoded);
+          // check if token has customerId
+          if (!decoded.sub) return res.status(401).json({ message: "Invalid token" });
           req.customerId = decoded.sub;
           next();
         }
@@ -85,7 +89,7 @@ module.exports = {
         // set orderDate to string of current date
         orderProps.orderDate = new Date().toISOString().slice(0, 10);
         // add the sql query to create the order to the queue
-        rabbitMQManager.addMessage(`INSERT INTO Orders (orderId, customerId, productId, quantity, orderDate, orderStatus) VALUES ('${orderId}', ${customerId}, ${product.productId}, ${product.quantity}, '${orderProps.orderDate}', 'Pending')`)
+        rabbitMQManager.addMessage(`INSERT INTO Orders (orderId, customerId, productId, quantity, orderDate, orderStatus) VALUES ('${orderId}', '${customerId}', ${product.productId}, ${product.quantity}, '${orderProps.orderDate}', 'Pending')`)
       });
       return res.status(201).json({ message: "Successfully created order", products: products, orderId: orderId });
     }
