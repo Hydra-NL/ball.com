@@ -10,7 +10,7 @@ module.exports = {
 async function authenticate({ email, password }) {
   const customer = await Customer.findOne({ email });
   if (customer && password == customer.hash) {
-    const token = jwt.sign({ sub: customer._id }, config.secret, { expiresIn: "7d" });
+    const token = jwt.sign({ sub: customer.customerId }, config.secret, { expiresIn: "7d" });
     return {
       ...customer.toJSON(),
       token,
