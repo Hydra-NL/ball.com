@@ -64,7 +64,7 @@ class RabbitMQReadConsumer {
   }
 
   startConsuming(channel) {
-    const readQueue = "replication_queue";
+    const readQueue = "supplier_replication_queue";
 
     channel.consume(
       readQueue,
@@ -99,7 +99,7 @@ class RabbitMQReadConsumer {
           return;
         }
 
-        const readQueue = "replication_queue";
+        const readQueue = "supplier_replication_queue";
 
         channel.assertQueue(readQueue, {
           durable: true,
