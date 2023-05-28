@@ -26,18 +26,23 @@ module.exports = {
     }
   },
 
-  findAll(req, res, next) {
-    const products = Product.findAll();
+  async findAll(req, res, next) {
+    const products = await Product.findAll();
     if (!products) {
       return res.status(422).send({ error: "No products found." });
     } else {
-      res.status(200).send(products);
+      try {
+        rabbitMQManager.addMessage(`SELECT * FROM Products`);
+        res.status(200).send(products);
+      } catch (error) {
+        console.log(error);
+      }
     }
   },
 
-  findById(req, res, next) {
+  async findById(req, res, next) {
     const productId = req.params.id;
-    const product = Product.findByPk(productId);
+    const product = await Product.findByPk(productId);
     if (!product) {
       return res.status(422).send({ error: "Product does not exist." });
     } else {
@@ -45,9 +50,9 @@ module.exports = {
     }
   },
 
-  findAllBySupplierId(req, res, next) {
+  async findAllBySupplierId(req, res, next) {
     const supplierId = req.params.supplier_id;
-    const products = Product.findAll({
+    const products = await Product.findAll({
       where: {
         supplier_id: supplierId,
       },

@@ -14,22 +14,23 @@ module.exports = {
     });
   },
 
-  findAll(req, res, next) {
-    const suppliers = Supplier.findAll();
+  async findAll(req, res, next) {
+    const suppliers = await Supplier.findAll();
     if (!suppliers) {
       return res.status(422).send({ error: "No suppliers found." });
     } else {
-      rabbitMQManager.addMessage(`SELECT * FROM Suppliers`);
-      res.status(201).json({
-        message: "Suppliers found.",
-        suppliers: suppliers,
-      });
+      try {
+        rabbitMQManager.addMessage(`SELECT * FROM Suppliers`);
+        res.status(200).send(suppliers);
+      } catch (error) {
+        console.log(error);
+      }
     }
   },
 
-  findById(req, res, next) {
+  async findById(req, res, next) {
     const supplierId = req.params.id;
-    const supplier = Supplier.findByPk(supplierId);
+    const supplier = await Supplier.findByPk(supplierId);
     if (!supplier) {
       return res.status(422).send({ error: "Supplier does not exist." });
     } else {
