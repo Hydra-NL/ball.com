@@ -38,6 +38,7 @@ class RabbitMQConsumer {
         }
       } else {
         console.log("[W | <=] Query executed successfully: " + sqlQuery);
+        this.sendToReplicationQueue(channel, sqlQuery);
         channel.ack(message);
       }
     });
