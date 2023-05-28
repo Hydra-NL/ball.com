@@ -116,7 +116,7 @@ sequelize
       // also add Customer table to the write database, include default for shoppingCart
       .then(() => {
         pool.query(
-          "CREATE TABLE IF NOT EXISTS Customers (id INT AUTO_INCREMENT PRIMARY KEY, customerId VARCHAR(255) NOT NULL, firstName VARCHAR(50) NOT NULL, lastName VARCHAR(50) NOT NULL, address VARCHAR(50) NOT NULL, city VARCHAR(50) NOT NULL, zip VARCHAR(50) NOT NULL, email VARCHAR(50) NOT NULL UNIQUE, hash VARCHAR(255) NOT NULL, shoppingCart JSON DEFAULT '[]'"
+          "CREATE TABLE IF NOT EXISTS Customers (id INT AUTO_INCREMENT PRIMARY KEY, customerId VARCHAR(255) NOT NULL, firstName VARCHAR(50) NOT NULL, lastName VARCHAR(50) NOT NULL, address VARCHAR(50) NOT NULL, city VARCHAR(50) NOT NULL, zip VARCHAR(50) NOT NULL, email VARCHAR(50) NOT NULL UNIQUE, hash VARCHAR(255) NOT NULL, shoppingCart JSON DEFAULT '[]')"
         );
       });
   })
