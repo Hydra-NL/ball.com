@@ -2,8 +2,8 @@ const Order = require("../models/order");
 const orderService = require("../services/order_service");
 const uuid = require("uuid");
 const rabbitMQManager = require('./rabbitMQ_publisher');
-const jwt = require("jsonwebtoken");
 const config = require("../config.json");
+const jwt = require("jsonwebtoken");
 
 module.exports = {
 
@@ -85,7 +85,7 @@ module.exports = {
         // set orderDate to string of current date
         orderProps.orderDate = new Date().toISOString().slice(0, 10);
         // add the sql query to create the order to the queue
-        rabbitMQManager.addMessage(`INSERT INTO Orders (orderId, customerId, productId, quantity, orderDate, orderStatus) VALUES ('${orderId}', ${customerId}, ${product.productId}, ${product.quantity}, '${orderProps.orderDate}', 'Pending')`)
+        rabbitMQManager.addMessage(`INSERT INTO Orders (orderId, customerId, productId, quantity, orderDate, orderStatus) VALUES ('${orderId}', '${customerId}', ${product.productId}, ${product.quantity}, '${orderProps.orderDate}', 'Pending')`)
       });
       return res.status(201).json({ message: "Successfully created order", products: products, orderId: orderId });
     }
