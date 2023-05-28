@@ -9,5 +9,8 @@ export class Ticket {
   title: string;
 
   @Column()
-  description: string;
+  message: string;
+
+  @Column()
+  customer: string;
 }
