@@ -7,6 +7,6 @@
 - Database: ballcom
 - Username: administrator
 - Password: password123
-- Host: localhost:3306 (of **mysql-standalone** binnen als je API draait in Docker)
+- Host: **mysql-write** voor write operaties en **mysql-read** voor read operaties
 
-4. RabbitMQ is nu toegankelijk via http://localhost:15672 met inlog guest:guest (of **rabbitmq-queue** als je API draait in Docker)
+4. RabbitMQ is nu toegankelijk via http://localhost:15672 (web dashboard) met inlog guest:guest (en **rabbitmq-queue** als wanneer je de API draait in Docker)
