@@ -52,11 +52,11 @@ module.exports = {
   validateToken(req, res, next) {
     const token = req.body.token || req.query.token || req.headers["x-access-token"];
     if (!token) {
-      res.status(401).json({ message: "No token provided" });
+      return res.status(401).json({ message: "No token provided" });
     } else {
       jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
-          res.status(401).json({ message: "Invalid token" });
+          return res.status(401).json({ message: "Invalid token" });
         } else {
           console.log(decoded);
           req.customerId = decoded.sub;
@@ -125,7 +125,7 @@ module.exports = {
         if (order.customerId != req.customerId) return res.status(401).json({ message: "Unauthorized" });
         else {
           rabbitMQManager.addMessage(`DELETE FROM Orders WHERE orderId = '${orderId}'`)
-          res.status(200).json({ message: "Successfully deleted order", order: order });
+          return res.status(200).json({ message: "Successfully deleted order", order: order });
         }
       })
       .catch((err) => {
@@ -137,6 +137,6 @@ module.exports = {
   },
 
   greeting(req, res) {
-    res.send({ Hello: "World!" });
+    return res.send({ Hello: "World!" });
   },
 };
