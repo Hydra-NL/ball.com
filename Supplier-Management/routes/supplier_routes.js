@@ -4,5 +4,5 @@ module.exports = (app) => {
   app.post("/suppliers", SupplierController.create);
   app.get("/suppliers", SupplierController.findAll);
   app.get("/suppliers/:id", SupplierController.findById);
-  app.put("/suppliers/:id", SupplierController.update);
+  app.post("/suppliers/upload", SupplierController.createFromCSV);
 };

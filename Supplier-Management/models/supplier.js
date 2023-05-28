@@ -1,36 +1,49 @@
 const { Sequelize, DataTypes } = require("sequelize");
-const sequelize = new Sequelize("sqlite::memory:");
+const sequelize = new Sequelize(
+  "ballcom", // database name
+  "administrator", // username
+  "password123", // password
+  {
+    host: "mysql-standalone", // MySQL container hostname (if running on the same machine as this app, or the IP address of the machine running the MySQL container, if running on separate machines)
+    port: 3306,
+    dialect: "mysql",
+    logging: false,
+  }
+);
 
-const Product = require("./product");
-
-const Supplier = sequelize.define("Supplier", {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
+const Supplier = sequelize.define(
+  "Supplier",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    supplier_name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    supplier_address: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
-  supplier_name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  supplier_address: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
-
-// Define the many-to-many relationship between Supplier and Product
-Supplier.belongsToMany(Product, { through: "SupplierProduct" });
-Product.belongsToMany(Supplier, { through: "SupplierProduct" });
+  {
+    timestamps: false,
+  }
+);
 
 // Synchronize the models with the database
 sequelize
-  .sync()
+  .sync({ force: false })
   .then(() => {
-    console.log("Models synchronized with the database.");
+    console.log("Supplier table created successfully!");
+    sequelize.query("SHOW TABLES").then((result) => {
+      console.log(result[0]);
+    });
   })
-  .catch((error) => {
-    console.error("Error synchronizing models:", error);
+  .catch((err) => {
+    console.log(err);
   });
 
 module.exports = Supplier;
