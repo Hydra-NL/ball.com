@@ -47,6 +47,7 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
+
   order-management:
     networks:
       - ballcom
@@ -103,11 +104,12 @@ services:
     ports:
       - 3002:3002
     depends_on:
-      - mysql-standalone
+      - mysql-write
+      - mysql-read
       - rabbitmq
     environment:
       NODE_ENV: production
-      MYSQL_HOST: mysql-standalone
+      MYSQL_HOST: mysql-write
       MYSQL_PORT: 3306
       MYSQL_USER: administrator
       MYSQL_PASSWORD: password123

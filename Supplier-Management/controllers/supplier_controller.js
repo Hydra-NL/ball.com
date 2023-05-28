@@ -20,7 +20,6 @@ module.exports = {
       return res.status(422).send({ error: "No suppliers found." });
     } else {
       try {
-        rabbitMQManager.addMessage(`SELECT * FROM Suppliers`);
         res.status(200).send(suppliers);
       } catch (error) {
         console.log(error);
