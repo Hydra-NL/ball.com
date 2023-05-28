@@ -21,7 +21,7 @@ app.listen(port, () => {
   consumer.listenToQueue();
 
   const read = new RabbitMQRead();
-  read.listenToQueue();
+  read.listenToReadQueue();
 
   console.log(`Server running at http://localhost:${port}`);
 });
