@@ -1,4 +1,15 @@
 const { Sequelize, DataTypes } = require("sequelize");
+const mysql = require("mysql2");
+
+const pool = mysql.createPool({
+  host: "mysql-write",
+  user: "administrator",
+  password: "password123",
+  database: "ballcom",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
 
 // Configure the MySQL database connection
 const sequelize = new Sequelize(
@@ -6,8 +17,7 @@ const sequelize = new Sequelize(
   "administrator", // username
   "password123", // password
   {
-    host: "localhost", // MySQL container hostname (if running on the same machine as this app, or the IP address of the machine running the MySQL container, if running on separate machines)
-    port: 3306,
+    host: "mysql-read", // MySQL container hostname (if running on the same machine as this app, or the IP address of the machine running the MySQL container, if running on separate machines)
     dialect: "mysql",
     logging: false,
   }
@@ -20,6 +30,10 @@ const Customer = sequelize.define(
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+    },
+    customerId: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     firstName: {
       type: DataTypes.STRING(50),
@@ -64,7 +78,7 @@ const Customer = sequelize.define(
     email: {
       type: DataTypes.STRING(50),
       allowNull: false,
-      unique: true,
+      isUnique: true,
       validate: {
         notNull: { msg: "Email is required" },
         notEmpty: { msg: "Email is required" },
@@ -92,7 +106,28 @@ const Customer = sequelize.define(
 sequelize
   .sync({ force: false })
   .then(() => {
-    console.log("Order table created successfully!");
+    console.log("Customer table created successfully!");
+    // print all tables in the database
+    sequelize
+      .query("SHOW TABLES")
+      .then((result) => {
+        console.log(result[0]);
+      })
+      // also add Customer table to the write database, include default for shoppingCart
+      .then(() => {
+        pool.query(
+          "CREATE TABLE IF NOT EXISTS Customers (id INT AUTO_INCREMENT PRIMARY KEY, customerId VARCHAR(255) NOT NULL, firstName VARCHAR(50) NOT NULL, lastName VARCHAR(50) NOT NULL, address VARCHAR(50) NOT NULL, city VARCHAR(50) NOT NULL, zip VARCHAR(50) NOT NULL, email VARCHAR(50) NOT NULL UNIQUE, hash VARCHAR(255) NOT NULL, shoppingCart JSON)"
+        );
+      });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+sequelize
+  .sync({ force: false })
+  .then(() => {
+    console.log("Customer table created successfully!");
     // print all tables in the database
     sequelize.query("SHOW TABLES").then((result) => {
       console.log(result[0]);

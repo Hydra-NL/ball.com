@@ -66,7 +66,7 @@ class RabbitMQConsumer {
     }
 
     sendToReplicationQueue(channel, sqlQuery) {
-        const replicationQueue = 'replication_queue';
+        const replicationQueue = 'order_replication_queue';
 
         channel.assertQueue(replicationQueue, {
             durable: true

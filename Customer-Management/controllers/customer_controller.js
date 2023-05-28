@@ -1,19 +1,29 @@
 const Customer = require("../models/customer");
 const customerService = require("../services/customer_service");
+const rabbitMQManager = require("./rabbitMQ_publisher");
+const uuid = require("uuid");
 
 module.exports = {
   register(req, res, next) {
     const customerProps = req.body;
+    let customerId = uuid.v4();
 
-    customerService.customerExists(customerProps.email).then((bool) => {
-      if (bool == true) {
-        res.status(409).json({ message: "Email is already in use" });
-      } else {
-        Customer.create(customerProps)
-          .then((customer) => res.send(customer))
-          .catch(next);
-      }
-    });
+    customerService
+      .customerExists(customerProps.email)
+      .then((exists) => {
+        if (exists) {
+          res.status(409).json({ message: "Email is already in use" });
+        } else {
+          rabbitMQManager.addMessage(
+            `INSERT INTO Customers (customerId, firstName, lastName, address, city, zip, email, hash) VALUES ('${customerId}', '${customerProps.firstName}', '${customerProps.lastName}', '${customerProps.address}', '${customerProps.city}', '${customerProps.zip}', '${customerProps.email}', '${customerProps.hash}')`
+          );
+          res.status(201).json({ customerId: customerId, ...customerProps });
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        next(error);
+      });
   },
 
   login(req, res, next) {
