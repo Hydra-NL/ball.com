@@ -1,10 +1,26 @@
 version: "3"
 services:
-  mysql-standalone:
+  mysql-write:
     networks:
       - ballcom
-    image: mysql:5.7
-    container_name: mysql-standalone
+    image: mysql:latest
+    container_name: mysql-write
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ballcom
+      MYSQL_USER: administrator
+      MYSQL_PASSWORD: password123
+    ports:
+      - 3307:3306
+    volumes:
+      - mysql-write:/var/lib/mysql
+
+  mysql-read:
+    networks:
+      - ballcom
+    image: mysql:latest
+    container_name: mysql-read
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -14,7 +30,7 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mysql-read:/var/lib/mysql
 
   rabbitmq:
     networks:
@@ -40,11 +56,12 @@ services:
     ports:
       - 3000:3000
     depends_on:
-      - mysql-standalone
+      - mysql-write
+      - mysql-read
       - rabbitmq
     environment:
       NODE_ENV: production
-      MYSQL_HOST: mysql-standalone
+      MYSQL_HOST: mysql-write
       MYSQL_PORT: 3306
       MYSQL_USER: administrator
       MYSQL_PASSWORD: password123
@@ -77,9 +94,34 @@ services:
       RABBITMQ_USERNAME: guest
       RABBITMQ_PASSWORD: guest
 
+  supplier-management:
+    networks:
+      - ballcom
+    build: ./Supplier-Management
+    container_name: supplier-management
+    restart: always
+    ports:
+      - 3002:3002
+    depends_on:
+      - mysql-standalone
+      - rabbitmq
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql-standalone
+      MYSQL_PORT: 3306
+      MYSQL_USER: administrator
+      MYSQL_PASSWORD: password123
+      MYSQL_DATABASE: ballcom
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+
 volumes:
-  mysql-data:
+  mysql-write:
+  mysql-read:
   rabbitmq-data:
 
 networks:
   ballcom:
+    driver: bridge

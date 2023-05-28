@@ -48,19 +48,19 @@ module.exports = {
   validateToken(req, res, next) {
     req.customerId = 1;
     next();
-    // const token = req.body.token || req.query.token || req.headers["x-access-token"];
-    // if (!token) {
-    //   res.status(401).json({ message: "No token provided" });
-    // } else {
-    //   jwt.verify(token, config.secret, (err, decoded) => {
-    //     if (err) {
-    //       res.status(401).json({ message: "Invalid token" });
-    //     } else {
-    //       req.customerId = decoded.sub;
-    //       next();
-    //     }
-    //   });
-    // }
+    const token = req.body.token || req.query.token || req.headers["x-access-token"];
+    if (!token) {
+      res.status(401).json({ message: "No token provided" });
+    } else {
+      jwt.verify(token, config.secret, (err, decoded) => {
+        if (err) {
+          res.status(401).json({ message: "Invalid token" });
+        } else {
+          req.customerId = decoded.sub;
+          next();
+        }
+      });
+    }
   },
 
   createOrder(req, res, next) {
@@ -82,7 +82,7 @@ module.exports = {
         // set orderDate to string of current date
         orderProps.orderDate = new Date().toISOString().slice(0, 10);
         // add the sql query to create the order to the queue
-        rabbitMQManager.addMessage(`INSERT INTO Orders (orderId, customerId, productId, quantity, orderDate) VALUES ('${orderId}', ${customerId}, ${product.productId}, ${product.quantity}, '${orderProps.orderDate}')`)
+        rabbitMQManager.addMessage(`INSERT INTO Orders (orderId, customerId, productId, quantity, orderDate, orderStatus) VALUES ('${orderId}', ${customerId}, ${product.productId}, ${product.quantity}, '${orderProps.orderDate}', 'Pending')`)
       });
       res.status(201).json({ message: "Successfully created order", products: products, orderId: orderId });
     }
@@ -97,13 +97,7 @@ module.exports = {
         // check if customer is same as customer in token
         if (orders[0].customerId != req.customerId) res.status(401).json({ message: "Unauthorized" });
         else {
-          orders.forEach((order) => {
-            order.update(orderProps)
-              .catch((err) => {
-                console.error(err);
-                next(err);
-              });
-          });
+          rabbitMQManager.addMessage(`UPDATE Orders SET orderStatus = '${orderProps.orderStatus}' WHERE orderId = '${orderId}'`)
           res.status(200).json({ message: "Successfully updated order", order: orders });
         }
       })
@@ -121,12 +115,8 @@ module.exports = {
         // check if customer is same as customer in token
         if (order.customerId != req.customerId) res.status(401).json({ message: "Unauthorized" });
         else {
-          order.destroy()
-            .then(() => res.status(200).json({ message: "Successfully deleted order" }))
-            .catch((err) => {
-              console.error(err);
-              next(err);
-            });
+          rabbitMQManager.addMessage(`DELETE FROM Orders WHERE orderId = '${orderId}'`)
+          res.status(200).json({ message: "Successfully deleted order", order: order });
         }
       })
       .catch((err) => {
