@@ -8,5 +8,5 @@ module.exports = (app) => {
     "/products/suppliers/:supplier_id",
     ProductController.findAllBySupplierId
   );
-  app.put("/products/:id", ProductController.update);
+  app.post("/products/upload", ProductController.createFromCSV);
 };
