@@ -30,6 +30,8 @@ module.exports = {
     const customerId = req.customerId;
     Order.findAll({ where: { customerId: customerId } })
       .then((orders) => {
+        // if no orders found, return message
+        if (orders.length == 0) res.status(404).json({ message: "No orders found" });
         // group products with same orderId together
         const groupedOrders = {};
         orders.forEach((order) => {
@@ -46,8 +48,6 @@ module.exports = {
   },
 
   validateToken(req, res, next) {
-    req.customerId = 1;
-    next();
     const token = req.body.token || req.query.token || req.headers["x-access-token"];
     if (!token) {
       res.status(401).json({ message: "No token provided" });
@@ -94,16 +94,20 @@ module.exports = {
     const orderProps = req.body;
     Order.findAll({ where: { orderId: orderId } })
       .then((orders) => {
+        // if no orders found, return message
+        if (orders.length == 0) res.status(404).json({ message: "No orders found" });
         // check if customer is same as customer in token
         if (orders[0].customerId != req.customerId) res.status(401).json({ message: "Unauthorized" });
         else {
           rabbitMQManager.addMessage(`UPDATE Orders SET orderStatus = '${orderProps.orderStatus}' WHERE orderId = '${orderId}'`)
-          res.status(200).json({ message: "Successfully updated order", order: orders });
+          res.status(200).json({ message: "Successfully updated order" });
         }
       })
       .catch((err) => {
         console.error(err);
-        next(err);
+        // on error, add message to queue no matter what
+        rabbitMQManager.addMessage(`UPDATE Orders SET orderStatus = '${orderProps.orderStatus}' WHERE orderId = '${orderId}'`)
+        res.status(200).json({ message: "Successfully updated order" });
       });
   },
 
@@ -112,6 +116,8 @@ module.exports = {
     const orderId = req.params.id;
     Order.findByPk(orderId)
       .then((order) => {
+        // if no orders found, return message
+        if (order == null) res.status(404).json({ message: "No order found" });
         // check if customer is same as customer in token
         if (order.customerId != req.customerId) res.status(401).json({ message: "Unauthorized" });
         else {
@@ -121,7 +127,9 @@ module.exports = {
       })
       .catch((err) => {
         console.error(err);
-        next(err);
+        // on error, add message to queue no matter what
+        rabbitMQManager.addMessage(`DELETE FROM Orders WHERE orderId = '${orderId}'`)
+        res.status(200).json({ message: "Successfully deleted order" });
       });
   },
 
