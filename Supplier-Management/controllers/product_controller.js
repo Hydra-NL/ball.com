@@ -32,7 +32,6 @@ module.exports = {
       return res.status(422).send({ error: "No products found." });
     } else {
       try {
-        rabbitMQManager.addMessage(`SELECT * FROM Products`);
         res.status(200).send(products);
       } catch (error) {
         console.log(error);
