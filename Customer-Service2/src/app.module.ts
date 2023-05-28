@@ -9,13 +9,12 @@ import { TicketModule } from './tickets/ticket.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
+      host: 'localhost:3306',
       port: 3306,
       username: 'administrator',
       password: 'password123',
       database: 'ballcom',
       entities: [Ticket],
-      synchronize: true,
     }),
     TicketModule,
   ],
