@@ -65,7 +65,7 @@ module.exports = {
           res.send(customer);
         } else {
           // Handle case when customer is not found
-          res.status(404).send("Customer not found");
+          res.status(404).json({ error: "Customer not found" });
         }
       })
       .catch((err) => {
