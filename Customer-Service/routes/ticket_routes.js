@@ -39,7 +39,7 @@ module.exports = (app) => {
     TicketController.addComment
   );
   app.get(
-    "/ticket/serviceagent",
+    "/ticket/serviceagent/get",
     TicketController.generateToken
   );
 };
