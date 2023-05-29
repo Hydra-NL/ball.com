@@ -9,11 +9,11 @@ module.exports = (app) => {
   app.post("/api/auth/register", CustomerController.register);
   app.get("/api/customers", CustomerController.index);
   app.get("/api/customers/:customerId", CustomerController.indexOne);
-  app.delete("/api/customers/:customerId", CustomerController.remove);
+  app.delete("/api/customers", CustomerController.remove);
 
   // Shopping Cart routes
   app.put("/api/shopping-cart", ShoppingCartController.addItem);
-  app.get("/api/shopping-cart/:customerId", ShoppingCartController.index);
+  app.get("/api/shopping-cart", ShoppingCartController.index);
   app.put("/api/shopping-cart/remove", ShoppingCartController.removeItem);
-  app.put("/api/shopping-cart/:customerId", ShoppingCartController.emptyCart);
+  app.put("/api/shopping-cart/empty", ShoppingCartController.emptyCart);
 };
