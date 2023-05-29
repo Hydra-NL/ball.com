@@ -4,8 +4,8 @@ const bodyParser = require("body-parser");
 const app = express();
 const port = process.env.PORT || 3000;
 
-const RabbitMQConsumer = require('./controllers/rabbitMQ_consumer');
-const RabbitMQRead = require('./controllers/rabbitMQ_read');
+const RabbitMQConsumer = require('./rabbitmq/rabbitMQ_consumer');
+const RabbitMQRead = require('./rabbitmq/rabbitMQ_read');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
