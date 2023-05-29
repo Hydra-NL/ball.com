@@ -153,38 +153,4 @@ module.exports = {
         next(err);
       });
   },
-
-  //   order(req, res, next) {
-  //     const customerId = req.body.customerId;
-
-  //     Customer.findByPk(customerId)
-  //       .then((customer) => {
-  //         if (!customer) {
-  //           return res.status(404).json({ error: "Customer not found" });
-  //         }
-
-  //         if (customer.shoppingCart.length === 0) {
-  //           return res.status(400).json({ error: "Shopping cart is empty" });
-  //         }
-
-  //         const order = customer.shoppingCart;
-  //         // Assuming you have an "Order" model, you can create a new order entry
-  //         Order.create({ customerId, order })
-  //           .then(() => {
-  //             // Call the emptyCart method to clear the shopping cart
-  //             return this.emptyCart(customerId);
-  //           })
-  //           .then(() => {
-  //             return res.status(200).json({ message: "Order placed successfully" });
-  //           })
-  //           .catch((err) => {
-  //             console.error(err);
-  //             next(err);
-  //           });
-  //       })
-  //       .catch((err) => {
-  //         console.error(err);
-  //         next(err);
-  //       });
-  //   },
 };

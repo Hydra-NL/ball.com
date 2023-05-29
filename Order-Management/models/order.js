@@ -36,7 +36,7 @@ const Order = sequelize.define(
       allowNull: false,
     },
     customerId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     orderDate: {
@@ -72,9 +72,9 @@ sequelize
       .then((result) => {
         console.log(result[0]);
       })
-      // also add Order table to the read database, include default for orderStatus
+      // also add Order table to the write database, include default for orderStatus
       .then(() => {
-        pool.query("CREATE TABLE IF NOT EXISTS Orders (id INT AUTO_INCREMENT PRIMARY KEY, orderId VARCHAR(255) NOT NULL, customerId INT NOT NULL, orderDate VARCHAR(255) NOT NULL, orderStatus VARCHAR(255) NOT NULL DEFAULT 'Pending', productId INT NOT NULL, quantity INT NOT NULL)")
+        pool.query("CREATE TABLE IF NOT EXISTS Orders (id INT AUTO_INCREMENT PRIMARY KEY, orderId VARCHAR(255) NOT NULL, customerId VARCHAR(255) NOT NULL, orderDate VARCHAR(255) NOT NULL, orderStatus VARCHAR(255) NOT NULL DEFAULT 'Pending', productId INT NOT NULL, quantity INT NOT NULL)")
       })
   })
   .catch((err) => {

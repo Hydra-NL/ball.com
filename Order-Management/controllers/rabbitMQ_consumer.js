@@ -21,8 +21,14 @@ class RabbitMQConsumer {
         this.pool.query(sqlQuery, (err, result) => {
             if (err) {
                 console.error("[W | <=] Error executing query:", err.message);
-                if (!this.isCheckingDatabase) {
-                    this.checkDatabaseAndResume(channel);
+                // check if the error is due to a lost connection to the database or anything related to the connection
+                if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR' || err.code === 'PROTOCOL_ENQUEUE_AFTER_QUIT' || err.code === 'PROTOCOL_ENQUEUE_HANDSHAKE_TWICE') {
+                    if (!this.isCheckingDatabase) {
+                        this.checkDatabaseAndResume(channel);
+                    }
+                } else {
+                    console.error("[W | <=] Query execution failed. Acknowledging message...");
+                    channel.ack(message);
                 }
             } else {
                 console.log("[W | <=] Query executed successfully: " + sqlQuery);
@@ -60,7 +66,7 @@ class RabbitMQConsumer {
     }
 
     sendToReplicationQueue(channel, sqlQuery) {
-        const replicationQueue = 'replication_queue';
+        const replicationQueue = 'order_replication_queue';
 
         channel.assertQueue(replicationQueue, {
             durable: true
