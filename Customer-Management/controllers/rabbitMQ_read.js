@@ -1,10 +1,10 @@
 const amqp = require("amqplib/callback_api");
 const mysql = require("mysql2");
 
-class RabbitMQConsumer {
+class RabbitMQReadConsumer {
   constructor() {
     this.pool = mysql.createPool({
-      host: "mysql-write",
+      host: "mysql-read",
       user: "administrator",
       password: "password123",
       database: "ballcom",
@@ -15,12 +15,13 @@ class RabbitMQConsumer {
     this.isCheckingDatabase = false;
   }
 
-  executeQuery(channel, message) {
+  executeReadQuery(channel, message) {
     const sqlQuery = message.content.toString();
 
     this.pool.query(sqlQuery, (err, result) => {
       if (err) {
-        console.error("[W | <=] Error executing query:", err.message);
+        console.error("[R | <=] Error executing query:", err.message);
+        // check if the error is due to a lost connection to the database or anything related to the connection
         if (
           err.code === "PROTOCOL_CONNECTION_LOST" ||
           err.code === "PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR" ||
@@ -31,14 +32,11 @@ class RabbitMQConsumer {
             this.checkDatabaseAndResume(channel);
           }
         } else {
-          console.error(
-            "[W | <=] Query execution failed. Acknowledging message..."
-          );
+          console.error("[R | <=] Query execution failed. Acknowledging message...");
           channel.ack(message);
         }
       } else {
-        console.log("[W | <=] Query executed successfully: " + sqlQuery);
-        this.sendToReplicationQueue(channel, sqlQuery);
+        console.log("[R | <=] Query executed successfully: " + sqlQuery);
         channel.ack(message);
       }
     });
@@ -46,18 +44,14 @@ class RabbitMQConsumer {
 
   checkDatabaseAndResume(channel) {
     this.isCheckingDatabase = true;
-    console.log("[W | <=] Checking database connection...");
+    console.log("[R | <=] Checking database connection...");
 
     this.pool.query("SELECT 1", (error) => {
       if (error) {
-        console.error(
-          "[W | <=] Database connection check failed. Retrying in 5 seconds..."
-        );
+        console.error("[R | <=] Database connection check failed. Retrying in 5 seconds...");
         setTimeout(() => this.checkDatabaseAndResume(channel), 5000);
       } else {
-        console.log(
-          "[W | <=] Database connection check succeeded. Resuming message consumption..."
-        );
+        console.log("[R | <=] Database connection check succeeded. Resuming message consumption...");
         this.isCheckingDatabase = false;
         channel.recover();
       }
@@ -65,62 +59,42 @@ class RabbitMQConsumer {
   }
 
   startConsuming(channel) {
-    const queue = "supplier_queue";
+    const readQueue = "customer_replication_queue";
 
     channel.consume(
-      queue,
+      readQueue,
       (message) => {
-        this.executeQuery(channel, message);
+        this.executeReadQuery(channel, message);
       },
       {
         noAck: false,
-        consumerTag: "myConsumer",
+        consumerTag: "readConsumer",
       }
     );
   }
 
-  sendToReplicationQueue(channel, sqlQuery) {
-    const queue = "supplier_replication_queue";
-
-    channel.assertQueue(queue, {
-      durable: true,
-    });
-
-    channel.sendToQueue(queue, Buffer.from(sqlQuery), {
-      persistent: true,
-    });
-
-    console.log("[W | <=] Sent '%s' to %s", sqlQuery, queue);
-  }
-
-  listenToQueue() {
+  listenToReadQueue() {
     amqp.connect("amqp://rabbitmq-queue", (errorConnect, connection) => {
       if (errorConnect) {
-        console.error(
-          "[W | <=] Error connecting to RabbitMQ: ",
-          errorConnect.message
-        );
-        setTimeout(() => this.listenToQueue(), 5000);
+        console.error("[R | <=] Error connecting to RabbitMQ: ", errorConnect.message);
+        setTimeout(() => this.listenToReadQueue(), 5000);
         return;
       }
 
       connection.createChannel((errorChannel, channel) => {
         if (errorChannel) {
-          console.error(
-            "[W | <=] Error creating channel: ",
-            errorChannel.message
-          );
-          setTimeout(() => this.listenToQueue(), 5000);
+          console.error("[R | <=] Error creating channel: ", errorChannel.message);
+          setTimeout(() => this.listenToReadQueue(), 5000);
           return;
         }
 
-        const queue = "supplier_queue";
+        const readQueue = "customer_replication_queue";
 
-        channel.assertQueue(queue, {
+        channel.assertQueue(readQueue, {
           durable: true,
         });
 
-        console.log("[W | <=] Waiting for messages in %s", queue);
+        console.log("[R | <=] Waiting for messages in %s", readQueue);
 
         this.startConsuming(channel);
       });
@@ -128,4 +102,4 @@ class RabbitMQConsumer {
   }
 }
 
-module.exports = RabbitMQConsumer;
+module.exports = RabbitMQReadConsumer;

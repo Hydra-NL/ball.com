@@ -1,4 +1,15 @@
 const { Sequelize, DataTypes } = require("sequelize");
+const mysql = require('mysql2');
+
+const pool = mysql.createPool({
+  host: "mysql-write",
+  user: "administrator",
+  password: "password123",
+  database: "ballcom",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
 
 // Configure the MySQL database connection
 const sequelize = new Sequelize(
@@ -6,8 +17,7 @@ const sequelize = new Sequelize(
   'administrator', // username
   'password123', // password
   {
-    host: 'mysql-standalone', // MySQL container hostname (if running on the same machine as this app, or the IP address of the machine running the MySQL container, if running on separate machines)
-    port: 3306,
+    host: 'mysql-read', // MySQL container hostname (if running on the same machine as this app, or the IP address of the machine running the MySQL container, if running on separate machines)
     dialect: "mysql",
     logging: false,
   }
@@ -26,7 +36,7 @@ const Order = sequelize.define(
       allowNull: false,
     },
     customerId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     orderDate: {
@@ -61,6 +71,10 @@ sequelize
       .query("SHOW TABLES")
       .then((result) => {
         console.log(result[0]);
+      })
+      // also add Order table to the write database, include default for orderStatus
+      .then(() => {
+        pool.query("CREATE TABLE IF NOT EXISTS Orders (id INT AUTO_INCREMENT PRIMARY KEY, orderId VARCHAR(255) NOT NULL, customerId VARCHAR(255) NOT NULL, orderDate VARCHAR(255) NOT NULL, orderStatus VARCHAR(255) NOT NULL DEFAULT 'Pending', productId INT NOT NULL, quantity INT NOT NULL)")
       })
   })
   .catch((err) => {
