@@ -1,7 +1,7 @@
 const Order = require("../models/order");
 const orderService = require("../services/order_service");
 const uuid = require("uuid");
-const rabbitMQManager = require('./rabbitMQ_publisher');
+const rabbitMQManager = require('../rabbitmq/rabbitMQ_publisher');
 const config = require("../config.json");
 const jwt = require("jsonwebtoken");
 

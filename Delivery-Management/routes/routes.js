@@ -3,16 +3,16 @@ const DeliveryController = require("../controllers/delivery_controller");
 
 module.exports = (app) => {
   // Logistics Company Routes
-  app.post("/api/logistics/create", LogisticsController.create);
-  app.put("/api/logistics/update", LogisticsController.update);
   app.get("/api/logistics/", LogisticsController.getAll);
-  app.get("/api/logistics/:id", LogisticsController.getById);
+  app.post("/api/logistics/", LogisticsController.create);
+  app.put("/api/logistics/:id", LogisticsController.update);
   app.delete("/api/logistics/:id", LogisticsController.delete)
 
-  // Order Status Routes
-  app.post("/api/order/create", DeliveryController.create);
-  app.put("/api/order/update", DeliveryController.update);
-  app.get("/api/order/", DeliveryController.getAll);
-  app.get("/api/order/:id", DeliveryController.getById);
-  app.delete("/api/order/:id", DeliveryController.delete)
+  // Delivery Routes (for internal use / employees)
+  app.get("/api/delivery/", DeliveryController.getAll);
+  app.post("/api/delivery/", DeliveryController.create);
+  app.put("/api/delivery/:id", DeliveryController.updateStatus);
+  app.delete("/api/delivery/:id", DeliveryController.delete)
+
+  // TODO: Delivery Routes (for customers)
 };

@@ -1,4 +1,5 @@
 const {Sequelize, DataTypes} = require("sequelize");
+const Status = require("../util/status");
 const mysql = require('mysql2');
 
 const pool = mysql.createPool({
@@ -46,10 +47,11 @@ const Order = sequelize.define(
         status: {
             type: DataTypes.STRING,
             allowNull: false,
+            defaultValue: Status.Pending,
             validate: {
                 notNull: {msg: "Status is required"},
                 notEmpty: {msg: "Status is required"},
-                isIn: [["Inventory", "Planning", "Load on truck", "Delivery"]]
+                isIn: {args: [Status.Values], msg: "Invalid status"},
             },
         }
     },
@@ -61,7 +63,8 @@ const Order = sequelize.define(
 sequelize
     .sync({force: false})
     .then(() => {
-        console.log("Order table created successfully!");
+        console.log("Deliveries table created successfully!");
+        pool.query("CREATE TABLE IF NOT EXISTS Deliveries (orderId INT PRIMARY KEY, logisticsId INT NOT NULL, status VARCHAR(50) NOT NULL DEFAULT 'Pending')");
     })
     .catch((err) => {
         console.log(err);
