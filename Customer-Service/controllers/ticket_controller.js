@@ -83,11 +83,6 @@ module.exports = {
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
-      await Ticket.destroy({
-        where: {
-          id: ticketId,
-        },
-      });
       rabbitMQManager.addMessage(`DELETE FROM Tickets WHERE id = ${ticketId}`);
       res.status(200).send({ message: "Ticket deleted." });
     }
@@ -99,18 +94,6 @@ module.exports = {
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
-      await Ticket.update(
-        {
-          title: req.body.title,
-          description: req.body.description,
-          status: req.body.status,
-        },
-        {
-          where: {
-            id: ticketId,
-          },
-        }
-      );
       rabbitMQManager.addMessage(
         `UPDATE Tickets SET title = '${req.body.title}', description = '${req.body.description}', status = '${req.body.status}' WHERE id = ${ticketId}`
       );
@@ -121,21 +104,23 @@ module.exports = {
   async addComment(req, res, next) {
     const ticketId = req.params.id;
     const ticket = await Ticket.findByPk(ticketId);
+    const message = req.body.message;
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
-      await Ticket.update(
-        {
-          messages: req.body.messages,
-        },
-        {
-          where: {
-            id: ticketId,
-          },
-        }
-      );
+      // if no message, return error
+      if (!message) return res.status(422).send({ error: "No message." });
+      // add message to current messages
+      const messages = ticket.messages;
+      messages.push({
+        author: req.role,
+        message: message,
+        date: new Date().toISOString().slice(0, 19).replace("T", " "),
+      });
+      // parse messages as json
+      const messagesJson = JSON.stringify(messages);
       rabbitMQManager.addMessage(
-        `UPDATE Tickets SET messages = '${req.body.messages}' WHERE id = ${ticketId}`
+        `UPDATE Tickets SET messages = '${messagesJson}' WHERE id = ${ticketId}`
       );
       res.status(200).send({ message: "Comment added." });
     }
@@ -152,9 +137,10 @@ module.exports = {
           return res.status(401).json({ message: "Invalid token" });
         } else {
           // check if token has customerId
-          if (!decoded.sub)
+          if (!decoded.sub && !decoded.role)
             return res.status(401).json({ message: "Invalid token" });
           req.customerId = decoded.sub;
+          req.role = decoded.role || "Customer";
           next();
         }
       });
