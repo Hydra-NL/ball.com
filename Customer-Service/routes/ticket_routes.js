@@ -23,11 +23,6 @@ module.exports = (app) => {
     TicketController.validateToken,
     TicketController.findAllByStatus
   );
-  app.put(
-    "/ticket/:id",
-    TicketController.validateToken,
-    TicketController.updateTicket
-  );
   app.delete(
     "/ticket/:id",
     TicketController.validateToken,
