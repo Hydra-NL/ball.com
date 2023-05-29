@@ -112,7 +112,11 @@ module.exports = {
       if (!message) return res.status(422).send({ error: "No message." });
       // add message to current messages
       const messages = ticket.messages;
-      messages.push(message);
+      messages.push({
+        author: "Customer",
+        message: message,
+        date: new Date().toISOString().slice(0, 19).replace("T", " "),
+      });
       // parse messages as json
       const messagesJson = JSON.stringify(messages);
       rabbitMQManager.addMessage(
