@@ -1,70 +1,60 @@
 const Logistics = require("../models/logistics");
+const Delivery = require("../models/delivery");
+const RabbitMQPublisher = require("../rabbitmq/rabbitMQ_publisher");
+const {isEmpty} = require("../util/util");
 
 module.exports = {
-    create(req, res, next) {
-        Logistics.create(req.body).then((logistics) => {
-            res.send(logistics)
-        }).catch((err) => {
-            console.error(err);
-            next(err);
-        });
-    },
-
-    update(req, res, next) {
-        Logistics.findByPk(req.body.id).then((logistics) => {
-            if (logistics) {
-                logistics.update(req.body).then(updated => {
-                    res.send(updated)
-                }).catch((err) => {
-                    console.error(err);
-                    next(err);
-                });
-            } else {
-                res.status(404).send({error: "There are no logistics with ID " + req.body.id});
-            }
-        }).catch((err) => {
-            console.log(err);
-            next(err);
-        });
-    },
-
     getAll(req, res, next) {
         Logistics.findAll().then((logistics) => {
             res.send(logistics);
-        }).catch((err) => {
-            console.error(err);
-            next(err);
         });
     },
 
-    getById(req, res, next) {
-        Logistics.findByPk(req.params.id).then((logistics) => {
-            if (logistics) {
-                res.send(logistics);
-            } else {
-                res.status(404).send({error: "There are no logistics with ID " + req.params.id});
+    create(req, res, next) {
+        const props = req.body;
+        const name = props.name;
+        const description = props.description;
+        const deliveryCosts = props.deliveryCosts;
+
+        if (isEmpty(name, "name", res) || isEmpty(deliveryCosts, "deliveryCosts", res)) {
+            return;
+        }
+
+        RabbitMQPublisher.addMessage(`INSERT INTO Logistics (name, description, deliveryCosts) VALUES ('${name}', '${description}', '${deliveryCosts}')`)
+        return res.status(201).json({message: "Successfully created logistics"});
+    },
+
+    update(req, res, next) {
+        const logisticsId = req.params.id;
+        const props = req.body;
+        const name = props.name;
+        const description = props.description;
+        const deliveryCosts = props.deliveryCosts;
+
+        if (isEmpty(name, "name", res) || isEmpty(deliveryCosts, "deliveryCosts", res)) {
+            return;
+        }
+
+        Logistics.findByPk(logisticsId).then((logistics) => {
+            if (!logistics) {
+                return res.status(404).send({error: "There are no logistics with ID " + logisticsId});
             }
-        }).catch((err) => {
-            console.error(err);
-            next(err);
+
+            RabbitMQPublisher.addMessage(`UPDATE Logistics SET name = '${name}', description = '${description}', deliveryCosts = '${deliveryCosts}' WHERE id = '${logisticsId}'`)
+            return res.status(200).json({message: "Successfully updated logistics company"});
         });
     },
 
     delete(req, res, next) {
-        Logistics.findByPk(req.params.id).then((logistics) => {
-            if (logistics) {
-                logistics.destroy().then(_ => {
-                    res.send(logistics);
-                }).catch((err) => {
-                    console.error(err);
-                    next(err);
-                })
-            } else {
-                res.status(404).send({error: "There are no logistics with ID " + req.params.id});
+        const logisticsId = req.params.id;
+
+        Delivery.findByPk(req.params.id).then((logistics) => {
+            if (!logistics) {
+                return res.status(404).send({error: "There are no logistics with ID " + logisticsId});
             }
-        }).catch((err) => {
-            console.error(err);
-            next(err);
+
+            RabbitMQPublisher.addMessage(`DELETE FROM Logistics WHERE id = '${logisticsId}'`)
+            return res.status(200).json({message: `Successfully deleted logistics company '${logistics.name}'`});
         });
     },
 };

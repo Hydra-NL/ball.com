@@ -61,6 +61,7 @@ sequelize
     .sync({force: false})
     .then(() => {
         console.log("Logistics table created successfully!");
+        pool.query("CREATE TABLE IF NOT EXISTS Logistics (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL, description VARCHAR(255), deliveryCosts INT NOT NULL)");
     })
     .catch((err) => {
         console.log(err);
