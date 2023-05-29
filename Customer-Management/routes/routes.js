@@ -8,12 +8,12 @@ module.exports = (app) => {
   app.post("/api/auth/login", CustomerController.login);
   app.post("/api/auth/register", CustomerController.register);
   app.get("/api/customers", CustomerController.index);
-  app.get("/api/customers/:id", CustomerController.indexOne);
-  app.delete("/api/customers/:id", CustomerController.remove);
+  app.get("/api/customers/:customerId", CustomerController.indexOne);
+  app.delete("/api/customers/:customerId", CustomerController.remove);
 
   // Shopping Cart routes
   app.put("/api/shopping-cart", ShoppingCartController.addItem);
-  app.get("/api/shopping-cart/:id", ShoppingCartController.index);
+  app.get("/api/shopping-cart/:customerId", ShoppingCartController.index);
   app.put("/api/shopping-cart/remove", ShoppingCartController.removeItem);
-  app.delete("/api/shopping-cart/:id", ShoppingCartController.emptyCart);
+  app.put("/api/shopping-cart/:customerId", ShoppingCartController.emptyCart);
 };

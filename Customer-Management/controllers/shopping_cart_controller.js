@@ -5,13 +5,16 @@ module.exports = {
     const customerId = req.body.customerId;
     const productName = req.body.productName;
 
-    Customer.findByPk(customerId)
-      .then((customer) => {
-        if (!customer) {
+    Customer.findOne({
+      where: { customerId: customerId },
+      raw: true,
+    })
+      .then((customerData) => {
+        if (!customerData) {
           return res.status(404).json({ error: "Customer not found" });
         }
 
-        let shoppingCart = customer.shoppingCart || [];
+        let shoppingCart = customerData.shoppingCart || [];
 
         try {
           // Parse the shopping cart JSON string into an array
@@ -28,22 +31,13 @@ module.exports = {
         shoppingCart.push(productName);
 
         // Convert the shopping cart array back to a JSON string
-        customer.shoppingCart = JSON.stringify(shoppingCart);
+        const updatedShoppingCart = JSON.stringify(shoppingCart);
 
-        return customer.save();
+        // Update the shoppingCart field of the existing customer record
+        return Customer.update({ shoppingCart: updatedShoppingCart }, { where: { customerId: customerId } });
       })
-      .then((savedCustomer) => {
-        let shoppingCart = savedCustomer.shoppingCart || [];
-
-        try {
-          // Parse the shopping cart JSON string into an array
-          shoppingCart = JSON.parse(shoppingCart);
-        } catch (err) {
-          // Handle invalid JSON or empty shopping cart
-          shoppingCart = [];
-        }
-
-        return res.status(200).json({ shoppingCart });
+      .then(() => {
+        return res.status(200).json({ message: "Product added to shopping cart" });
       })
       .catch((err) => {
         console.error(err);
@@ -55,7 +49,9 @@ module.exports = {
     const customerId = req.body.customerId;
     const productIndex = req.body.productIndex;
 
-    Customer.findByPk(customerId)
+    Customer.findOne({
+      where: { customerId: customerId },
+    })
       .then((customer) => {
         if (!customer) {
           return res.status(404).json({ error: "Customer not found" });
@@ -79,12 +75,15 @@ module.exports = {
         shoppingCart.splice(productIndex, 1);
 
         if (shoppingCart.length === 0) {
-          customer.shoppingCart = [];
+          customer.shoppingCart = null;
         } else {
           customer.shoppingCart = JSON.stringify(shoppingCart);
         }
 
-        return customer.save();
+        // Convert the plain JavaScript object back to a Sequelize model instance
+        const updatedCustomer = customer instanceof Customer ? customer : Customer.build(customer.dataValues);
+
+        return updatedCustomer.save();
       })
       .then(() => {
         res.status(200).json({ message: "Item removed from shopping cart" });
@@ -100,20 +99,27 @@ module.exports = {
   },
 
   emptyCart(req, res, next) {
-    const customerId = req.params.id;
+    const customerId = req.params.customerId;
 
-    Customer.findByPk(customerId)
+    Customer.findOne({
+      where: { customerId: customerId },
+    })
       .then((customer) => {
         if (!customer) {
           return res.status(404).json({ error: "Customer not found" });
         }
 
-        if (customer.shoppingCart.length === 0) {
+        // Check if shoppingCart property is null or undefined
+        if (!customer.shoppingCart || customer.shoppingCart.length === 0) {
           throw new Error("Shopping cart is already empty");
         }
 
         customer.shoppingCart = [];
-        return customer.save();
+
+        // Convert the plain JavaScript object back to a Sequelize model instance
+        const updatedCustomer = customer instanceof Customer ? customer : Customer.build(customer.dataValues);
+
+        return updatedCustomer.save();
       })
       .then(() => {
         return res.status(200).json({ message: "Shopping cart emptied" });
@@ -128,9 +134,12 @@ module.exports = {
   },
 
   index(req, res, next) {
-    const customerId = req.params.id;
+    const customerId = req.params.customerId;
 
-    Customer.findByPk(customerId)
+    Customer.findOne({
+      where: { customerId: customerId },
+      raw: true,
+    })
       .then((customer) => {
         if (!customer) {
           return res.status(404).json({ error: "Customer not found" });
