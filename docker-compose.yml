@@ -1,0 +1,129 @@
+version: "3"
+services:
+  mysql-write:
+    networks:
+      - ballcom
+    image: mysql:latest
+    container_name: mysql-write
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ballcom
+      MYSQL_USER: administrator
+      MYSQL_PASSWORD: password123
+    ports:
+      - 3307:3306
+    volumes:
+      - mysql-write:/var/lib/mysql
+
+  mysql-read:
+    networks:
+      - ballcom
+    image: mysql:latest
+    container_name: mysql-read
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ballcom
+      MYSQL_USER: administrator
+      MYSQL_PASSWORD: password123
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-read:/var/lib/mysql
+
+  rabbitmq:
+    networks:
+      - ballcom
+    image: rabbitmq:3.7-management
+    container_name: rabbitmq-queue
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  order-management:
+    networks:
+      - ballcom
+    build: ./Order-Management
+    container_name: order-management
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      - mysql-write
+      - mysql-read
+      - rabbitmq
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql-write
+      MYSQL_PORT: 3306
+      MYSQL_USER: administrator
+      MYSQL_PASSWORD: password123
+      MYSQL_DATABASE: ballcom
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+
+  customer-management:
+    networks:
+      - ballcom
+    build: ./Customer-Management
+    container_name: customer-management
+    restart: always
+    ports:
+      - 3001:3001
+    depends_on:
+      - mysql-write
+      - mysql-read
+      - rabbitmq
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql-write
+      MYSQL_PORT: 3306
+      MYSQL_USER: administrator
+      MYSQL_PASSWORD: password123
+      MYSQL_DATABASE: ballcom
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+
+  supplier-management:
+    networks:
+      - ballcom
+    build: ./Supplier-Management
+    container_name: supplier-management
+    restart: always
+    ports:
+      - 3002:3002
+    depends_on:
+      - mysql-write
+      - mysql-read
+      - rabbitmq
+    environment:
+      NODE_ENV: production
+      MYSQL_HOST: mysql-write
+      MYSQL_PORT: 3306
+      MYSQL_USER: administrator
+      MYSQL_PASSWORD: password123
+      MYSQL_DATABASE: ballcom
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+
+volumes:
+  mysql-write:
+  mysql-read:
+  rabbitmq-data:
+
+networks:
+  ballcom:
+    driver: bridge
