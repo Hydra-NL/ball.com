@@ -24,6 +24,14 @@ module.exports = {
       return res.status(422).send({ error: "No tickets found." });
     } else {
       try {
+        // remove tickets that do not belong to the customer if the customer is not a service agent
+        if (req.role != "Service Agent") {
+          tickets.forEach((ticket) => {
+            if (ticket.customerId != req.customerId) {
+              tickets.splice(tickets.indexOf(ticket), 1);
+            }
+          });
+        }
         res.status(200).send(tickets);
       } catch (error) {
         console.log(error);
@@ -37,6 +45,7 @@ module.exports = {
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
+      if (req.role != "Service Agent" && req.customerId != ticket.customerId) return res.status(401).send({ error: "Unauthorized" });
       res.status(200).send(ticket);
     }
   },
@@ -48,6 +57,8 @@ module.exports = {
         customerId: customerId,
       },
     });
+    // check if customerId is the same as the one in the token or if the user is a service agent
+    if (req.role != "Service Agent" && req.customerId != customerId) return res.status(401).send({ error: "Unauthorized" });
     if (!tickets) {
       return res.status(422).send({ error: "No tickets found." });
     } else {
@@ -66,6 +77,14 @@ module.exports = {
         status: status,
       },
     });
+    // remove tickets that do not belong to the customer if the customer is not a service agent
+    if (req.role != "Service Agent") {
+      tickets.forEach((ticket) => {
+        if (ticket.customerId != req.customerId) {
+          tickets.splice(tickets.indexOf(ticket), 1);
+        }
+      });
+    }
     if (!tickets) {
       return res.status(422).send({ error: "No tickets found." });
     } else {
@@ -83,6 +102,7 @@ module.exports = {
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
+      if (req.role != "Service Agent") return res.status(401).send({ error: "Unauthorized" });
       rabbitMQManager.addMessage(`DELETE FROM Tickets WHERE id = ${ticketId}`);
       res.status(200).send({ message: "Ticket deleted." });
     }
@@ -94,6 +114,7 @@ module.exports = {
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
+      if (ticket.customerId != req.customerId && req.role != "Service Agent") return res.status(401).send({ error: "Unauthorized" });
       rabbitMQManager.addMessage(
         `UPDATE Tickets SET title = '${req.body.title}', description = '${req.body.description}', status = '${req.body.status}' WHERE id = ${ticketId}`
       );
@@ -108,6 +129,8 @@ module.exports = {
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
+      // check if ticket belongs to customer or if role is service agent in one line
+      if (ticket.customerId != req.customerId && req.role != "Service Agent") return res.status(401).send({ error: "Unauthorized" });
       // if no message, return error
       if (!message) return res.status(422).send({ error: "No message." });
       // add message to current messages
@@ -124,6 +147,18 @@ module.exports = {
       );
       res.status(200).send({ message: "Comment added." });
     }
+  },
+
+  // simple method to generate service agent token
+  generateToken(req, res, next) {
+    const token = jwt.sign(
+      {
+        role: "Service Agent",
+      },
+      config.secret,
+      { expiresIn: "7d" }
+    );
+    res.status(200).json({ token: token });
   },
 
   validateToken(req, res, next) {
