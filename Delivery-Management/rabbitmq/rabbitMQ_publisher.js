@@ -17,7 +17,7 @@ class RabbitMQManager {
           throw errorChannel;
         }
 
-        const queue = 'order_queue';
+        const queue = 'delivery_queue';
         channel.assertQueue(queue, {
           durable: true
         });
@@ -33,7 +33,7 @@ class RabbitMQManager {
       return;
     }
 
-    const queue = 'order_queue';
+    const queue = 'delivery_queue';
     this.channel.sendToQueue(queue, Buffer.from(message), {
       persistent: true
     });

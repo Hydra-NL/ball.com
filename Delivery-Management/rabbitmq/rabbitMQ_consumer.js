@@ -55,7 +55,7 @@ class RabbitMQConsumer {
     }
 
     startConsuming(channel) {
-        const queue = 'order_queue';
+        const queue = 'delivery_queue';
 
         channel.consume(queue, (message) => {
             this.executeQuery(channel, message);
@@ -66,7 +66,7 @@ class RabbitMQConsumer {
     }
 
     sendToReplicationQueue(channel, sqlQuery) {
-        const replicationQueue = 'order_replication_queue';
+        const replicationQueue = 'delivery_replication_queue';
 
         channel.assertQueue(replicationQueue, {
             durable: true
@@ -94,7 +94,7 @@ class RabbitMQConsumer {
                     return;
                 }
 
-                const queue = 'order_queue';
+                const queue = 'delivery_queue';
 
                 channel.assertQueue(queue, {
                     durable: true
