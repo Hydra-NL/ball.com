@@ -1,0 +1,615 @@
+{
+	"info": {
+		"_postman_id": "c4dcaf12-495d-42b2-b0f4-d02a1b777286",
+		"name": "Ball.com",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15130000",
+		"_collection_link": "https://lunar-water-468734.postman.co/workspace/Ball.com-workspace~ab53aa2e-d444-49c9-be9c-ac59c1720b76/collection/15200850-c4dcaf12-495d-42b2-b0f4-d02a1b777286?action=share&creator=15130000&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "Supplier-Management",
+			"item": [
+				{
+					"name": "Supplier",
+					"item": [
+						{
+							"name": "Create supplier",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"supplier_name\": \"Delhaize\",\r\n    \"supplier_address\": \"Hoofdstraat 123, 1032LK, Amsterdam\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3002/suppliers",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3002",
+									"path": [
+										"suppliers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all suppliers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/suppliers",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"suppliers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get by id supplier",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/suppliers/1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"suppliers",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Upload suppliers",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "csv_file",
+											"type": "file",
+											"src": "/C:/Users/Pasca/Downloads/suppliers.csv"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3002/suppliers/upload",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3002",
+									"path": [
+										"suppliers",
+										"upload"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Product",
+					"item": [
+						{
+							"name": "Create product",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"product_name\": \"iPad PRO max juicer 2034\",\r\n    \"product_price\": 2499,\r\n    \"supplier_id\": \"a469f474-6e36-4eca-a350-0b95272c577a\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3002/products",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3002",
+									"path": [
+										"products"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all products",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/products",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"products"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get by id Product",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": ""
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Upload products",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "",
+											"type": "file",
+											"src": "/C:/Users/Pasca/Downloads/products.csv"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:3002/products/upload",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3002",
+									"path": [
+										"products",
+										"upload"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Customer-Management",
+			"item": [
+				{
+					"name": "Customer",
+					"item": [
+						{
+							"name": "Register Customer",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"address\": \"123 Main St\",\r\n    \"city\": \"New York\",\r\n    \"zip\": \"10001\",\r\n    \"email\": \"john.doe@example.com\",\r\n    \"hash\": \"mypassword\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/auth/register",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"auth",
+										"register"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Login Customer",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"john.doe@example.com\",\r\n    \"password\": \"mypassword\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/auth/login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"auth",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Customers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3001/api/customers",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"customers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Customer by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3001/api/customers/1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"customers",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Customer",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3001/api/customers/6",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"customers",
+										"6"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Shopping Cart",
+					"item": [
+						{
+							"name": "Add Product to Shopping Cart",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"customerId\": 2,\r\n    \"productName\": \"Product XYZ\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/shopping-cart",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"shopping-cart"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Prodcuts from Shopping Cart",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/shopping-cart/2",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"shopping-cart",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Product from Shopping Cart",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"customerId\": 2,\r\n    \"productIndex\": 0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3001/api/shopping-cart/remove",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"shopping-cart",
+										"remove"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Empty Shopping Cart",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3001/api/shopping-cart/2",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3001",
+									"path": [
+										"api",
+										"shopping-cart",
+										"2"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Order-Management",
+			"item": [
+				{
+					"name": "Order",
+					"item": [
+						{
+							"name": "All Orders",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MDA1NjVkNS0zMzBmLTQwMTUtYWE2MS01NGFjMTNjZDU3YTMiLCJpYXQiOjE2ODUzMTM3ODEsImV4cCI6MTY4NTkxODU4MX0.K4NI65qA8jrRL8jKLdHo6ZHlV5y4UXTTU2PZhT9SugE\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/api/orders",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Order by Order ID",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MDA1NjVkNS0zMzBmLTQwMTUtYWE2MS01NGFjMTNjZDU3YTMiLCJpYXQiOjE2ODUzMTM3ODEsImV4cCI6MTY4NTkxODU4MX0.K4NI65qA8jrRL8jKLdHo6ZHlV5y4UXTTU2PZhT9SugE\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/api/orders/e6342bc4-9fbe-4fcf-8435-201850d1215a",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"orders",
+										"e6342bc4-9fbe-4fcf-8435-201850d1215a"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "New Order",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"products\": [\r\n        { \"productId\": 1, \"quantity\": 2 },\r\n        { \"productId\": 2, \"quantity\": 2 }\r\n    ],\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkNWEyN2I1YS0wNjAzLTRmM2UtYjZjMC01MmM0ZDhlZjNkNTgiLCJpYXQiOjE2ODUzMTMxMDAsImV4cCI6MTY4NTkxNzkwMH0.Gm5LYfCm5sy0hwpRJO2_mtZrsjiy1PrY1cxw9TkMiBA\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/api/orders",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Order",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3MDA1NjVkNS0zMzBmLTQwMTUtYWE2MS01NGFjMTNjZDU3YTMiLCJpYXQiOjE2ODUzMTM3ODEsImV4cCI6MTY4NTkxODU4MX0.K4NI65qA8jrRL8jKLdHo6ZHlV5y4UXTTU2PZhT9SugE\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/api/orders/e6342bc4-9fbe-4fcf-8435-201850d1215a",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"api",
+										"orders",
+										"e6342bc4-9fbe-4fcf-8435-201850d1215a"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}
