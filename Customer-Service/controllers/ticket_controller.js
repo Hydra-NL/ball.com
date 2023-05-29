@@ -9,11 +9,12 @@ module.exports = {
     const ticket = req.body;
 
     rabbitMQManager.addMessage(
-      `INSERT INTO Tickets (title, description, status, customerId) VALUES ('${ticket.title}', '${ticket.description}', 'Open', '${customerId}')`
+      `INSERT INTO Tickets (title, description, status, customerId, messages) VALUES ('${ticket.title}', '${ticket.description}', 'Open', '${customerId}', '[]')`
     );
     res.status(201).json({
       message: "Ticket created.",
       ticket: req.body,
+      customerId: customerId,
     });
   },
 
@@ -82,11 +83,6 @@ module.exports = {
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
-      await Ticket.destroy({
-        where: {
-          id: ticketId,
-        },
-      });
       rabbitMQManager.addMessage(`DELETE FROM Tickets WHERE id = ${ticketId}`);
       res.status(200).send({ message: "Ticket deleted." });
     }
@@ -98,18 +94,6 @@ module.exports = {
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
-      await Ticket.update(
-        {
-          title: req.body.title,
-          description: req.body.description,
-          status: req.body.status,
-        },
-        {
-          where: {
-            id: ticketId,
-          },
-        }
-      );
       rabbitMQManager.addMessage(
         `UPDATE Tickets SET title = '${req.body.title}', description = '${req.body.description}', status = '${req.body.status}' WHERE id = ${ticketId}`
       );
@@ -120,32 +104,28 @@ module.exports = {
   async addComment(req, res, next) {
     const ticketId = req.params.id;
     const ticket = await Ticket.findByPk(ticketId);
+    const message = req.body.message;
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
-      await Ticket.update(
-        {
-          messages: req.body.messages,
-        },
-        {
-          where: {
-            id: ticketId,
-          },
-        }
-      );
+      // add message to current messages
+      const messages = ticket.messages;
+      messages.push(message);
+      // parse messages as json
+      const messagesJson = JSON.stringify(messages);
       rabbitMQManager.addMessage(
-        `UPDATE Tickets SET messages = '${req.body.messages}' WHERE id = ${ticketId}`
+        `UPDATE Tickets SET messages = '${messagesJson}' WHERE id = ${ticketId}`
       );
       res.status(200).send({ message: "Comment added." });
     }
   },
 
   validateToken(req, res, next) {
-    const token =
-      req.body.token || req.query.token || req.headers["x-access-token"];
-    if (!token) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
       return res.status(401).json({ message: "No token provided" });
     } else {
+      const token = authHeader.substring(7, authHeader.length);
       jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
           return res.status(401).json({ message: "Invalid token" });
