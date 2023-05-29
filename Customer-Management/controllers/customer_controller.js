@@ -89,19 +89,14 @@ module.exports = {
 
         const customerName = customer.firstName; // Assuming the name field exists in the Customer model
 
-        Customer.destroy({
-          where: { customerId: customerId },
-          raw: true,
-        })
-          .then(() => {
-            res.json({
-              message: `Customer "${customerName}" has been removed`,
-            });
-          })
-          .catch((err) => {
-            console.error(err);
-            next(err);
-          });
+        rabbitMQManager.addMessage(`DELETE FROM Customers WHERE customerId = '${customerId}'`);
+
+        try {
+          res.json({ message: `Customer "${customerName}" has been removed` });
+        } catch (err) {
+          console.error(err);
+          next(err);
+        }
       })
       .catch((err) => {
         console.error(err);
