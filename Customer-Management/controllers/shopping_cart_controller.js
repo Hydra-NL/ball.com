@@ -1,4 +1,5 @@
 const Customer = require("../models/customer");
+const rabbitMQManager = require("./rabbitMQ_publisher");
 
 module.exports = {
   addItem(req, res, next) {
@@ -14,15 +15,7 @@ module.exports = {
           return res.status(404).json({ error: "Customer not found" });
         }
 
-        let shoppingCart = customerData.shoppingCart || [];
-
-        try {
-          // Parse the shopping cart JSON string into an array
-          shoppingCart = JSON.parse(shoppingCart);
-        } catch (err) {
-          // Handle invalid JSON or empty shopping cart
-          shoppingCart = [];
-        }
+        let shoppingCart = customerData.shoppingCart;
 
         if (shoppingCart.length >= 20) {
           return res.status(400).json({ error: "Shopping cart limit reached" });
@@ -30,11 +23,10 @@ module.exports = {
 
         shoppingCart.push(productName);
 
-        // Convert the shopping cart array back to a JSON string
         const updatedShoppingCart = JSON.stringify(shoppingCart);
 
-        // Update the shoppingCart field of the existing customer record
-        return Customer.update({ shoppingCart: updatedShoppingCart }, { where: { customerId: customerId } });
+        // Update the shoppingCart (JSON datatype) field of the existing customer record
+        rabbitMQManager.addMessage(`UPDATE Customers SET shoppingCart = '${updatedShoppingCart}' WHERE customerId = '${customerId}'`);
       })
       .then(() => {
         return res.status(200).json({ message: "Product added to shopping cart" });
@@ -58,14 +50,9 @@ module.exports = {
         }
 
         let shoppingCart = customer.shoppingCart;
+
         if (!shoppingCart) {
           return res.status(400).json({ error: "Shopping cart is empty" });
-        }
-
-        try {
-          shoppingCart = JSON.parse(shoppingCart);
-        } catch (err) {
-          shoppingCart = [];
         }
 
         if (shoppingCart.length <= productIndex || productIndex < 0) {
@@ -74,16 +61,10 @@ module.exports = {
 
         shoppingCart.splice(productIndex, 1);
 
-        if (shoppingCart.length === 0) {
-          customer.shoppingCart = null;
-        } else {
-          customer.shoppingCart = JSON.stringify(shoppingCart);
-        }
+        const updatedShoppingCart = JSON.stringify(shoppingCart);
 
-        // Convert the plain JavaScript object back to a Sequelize model instance
-        const updatedCustomer = customer instanceof Customer ? customer : Customer.build(customer.dataValues);
-
-        return updatedCustomer.save();
+        // Update the shoppingCart (JSON datatype) field of the existing customer record
+        rabbitMQManager.addMessage(`UPDATE Customers SET shoppingCart = '${updatedShoppingCart}' WHERE customerId = '${customerId}'`);
       })
       .then(() => {
         res.status(200).json({ message: "Item removed from shopping cart" });
@@ -109,17 +90,18 @@ module.exports = {
           return res.status(404).json({ error: "Customer not found" });
         }
 
-        // Check if shoppingCart property is null or undefined
-        if (!customer.shoppingCart || customer.shoppingCart.length === 0) {
-          throw new Error("Shopping cart is already empty");
+        let shoppingCart = customer.shoppingCart;
+
+        if (!shoppingCart) {
+          return res.status(400).json({ error: "Shopping cart is empty" });
         }
 
-        customer.shoppingCart = [];
+        shoppingCart = [];
 
-        // Convert the plain JavaScript object back to a Sequelize model instance
-        const updatedCustomer = customer instanceof Customer ? customer : Customer.build(customer.dataValues);
+        const updatedShoppingCart = JSON.stringify(shoppingCart);
 
-        return updatedCustomer.save();
+        // Update the shoppingCart (JSON datatype) field of the existing customer record
+        rabbitMQManager.addMessage(`UPDATE Customers SET shoppingCart = '${updatedShoppingCart}' WHERE customerId = '${customerId}'`);
       })
       .then(() => {
         return res.status(200).json({ message: "Shopping cart emptied" });
@@ -145,15 +127,7 @@ module.exports = {
           return res.status(404).json({ error: "Customer not found" });
         }
 
-        let shoppingCart = customer.shoppingCart || [];
-
-        try {
-          // Parse the shopping cart JSON string into an array
-          shoppingCart = JSON.parse(shoppingCart);
-        } catch (err) {
-          // Handle invalid JSON or empty shopping cart
-          shoppingCart = [];
-        }
+        let shoppingCart = customer.shoppingCart;
 
         return res.status(200).json({ shoppingCart });
       })
