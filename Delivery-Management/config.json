@@ -1,3 +1,5 @@
 {
-  "secret": "Kaas"
+  "secret": "Kaas",
+  "orderApiHost": "order-management",
+  "orderApiPort": "3000"
 }
