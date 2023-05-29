@@ -113,7 +113,7 @@ module.exports = {
       // add message to current messages
       const messages = ticket.messages;
       messages.push({
-        author: "Customer",
+        author: req.role,
         message: message,
         date: new Date().toISOString().slice(0, 19).replace("T", " "),
       });
@@ -137,9 +137,10 @@ module.exports = {
           return res.status(401).json({ message: "Invalid token" });
         } else {
           // check if token has customerId
-          if (!decoded.sub)
+          if (!decoded.sub && !decoded.role)
             return res.status(401).json({ message: "Invalid token" });
           req.customerId = decoded.sub;
+          req.role = decoded.role || "Customer";
           next();
         }
       });

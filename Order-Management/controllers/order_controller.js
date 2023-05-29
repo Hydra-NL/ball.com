@@ -75,7 +75,7 @@ module.exports = {
       });
       orderProps.orderDate = new Date().toISOString().slice(0, 10);
       rabbitMQManager.addMessage(
-        `INSERT INTO Orders (orderId, customerId, orderDate, products) VALUES ('${orderId}', '${customerId}', '${orderProps.orderDate}', '${products}')`
+        `INSERT INTO Orders (orderId, customerId, orderDate, products) VALUES ('${orderId}', '${customerId}', '${orderProps.orderDate}', '${JSON.stringify(products)}')`
       );
       return res
         .status(201)
