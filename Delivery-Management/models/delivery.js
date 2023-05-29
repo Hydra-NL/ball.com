@@ -24,11 +24,11 @@ const sequelize = new Sequelize(
     }
 );
 
-const Order = sequelize.define(
+const Delivery = sequelize.define(
     "Delivery",
     {
         orderId: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             primaryKey: true,
             allowNull: false,
             validate: {
@@ -37,11 +37,11 @@ const Order = sequelize.define(
             },
         },
         logisticsId: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false,
             validate: {
-                notNull: {msg: "Logistics company is required"},
-                notEmpty: {msg: "Logistics company is required"},
+                notNull: {msg: "Logistics ID is required"},
+                notEmpty: {msg: "Logistics ID is required"},
             },
         },
         status: {
@@ -64,10 +64,10 @@ sequelize
     .sync({force: false})
     .then(() => {
         console.log("Deliveries table created successfully!");
-        pool.query("CREATE TABLE IF NOT EXISTS Deliveries (orderId INT PRIMARY KEY, logisticsId INT NOT NULL, status VARCHAR(50) NOT NULL DEFAULT 'Pending')");
+        pool.query("CREATE TABLE IF NOT EXISTS Deliveries (orderId VARCHAR(36) PRIMARY KEY, logisticsId VARCHAR(36) NOT NULL, status VARCHAR(50) NOT NULL DEFAULT 'Pending')");
     })
     .catch((err) => {
         console.log(err);
     });
 
-module.exports = Order;
+module.exports = Delivery;
