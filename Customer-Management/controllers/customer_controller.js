@@ -51,13 +51,20 @@ module.exports = {
   },
 
   indexOne(req, res, next) {
-    const customerId = req.params.id;
+    const customerId = req.params.customerId; // Assuming customerId is provided in the request parameters
 
-    Customer.findByPk(customerId, {
+    Customer.findOne({
+      where: { customerId: customerId },
       attributes: { exclude: ["hash"] },
+      raw: true,
     })
       .then((customer) => {
-        res.send(customer);
+        if (customer) {
+          res.send(customer);
+        } else {
+          // Handle case when customer is not found
+          res.status(404).send("Customer not found");
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -66,12 +73,11 @@ module.exports = {
   },
 
   remove(req, res, next) {
-    const customerId = req.params.id;
+    const customerId = req.params.customerId;
 
     Customer.findOne({
-      where: {
-        id: customerId,
-      },
+      where: { customerId: customerId },
+      raw: true,
     })
       .then((customer) => {
         if (!customer) {
@@ -84,9 +90,8 @@ module.exports = {
         const customerName = customer.firstName; // Assuming the name field exists in the Customer model
 
         Customer.destroy({
-          where: {
-            id: customerId,
-          },
+          where: { customerId: customerId },
+          raw: true,
         })
           .then(() => {
             res.json({
