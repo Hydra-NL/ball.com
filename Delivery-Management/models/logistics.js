@@ -1,5 +1,27 @@
 const {Sequelize, DataTypes} = require("sequelize");
-const sequelize = new Sequelize("sqlite::memory:");
+const mysql = require('mysql2');
+
+const pool = mysql.createPool({
+    host: "mysql-write",
+    user: "administrator",
+    password: "password123",
+    database: "ballcom",
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
+// Configure the MySQL database connection
+const sequelize = new Sequelize(
+    'ballcom', // database name
+    'administrator', // username
+    'password123', // password
+    {
+        host: 'mysql-read', // MySQL container hostname (if running on the same machine as this app, or the IP address of the machine running the MySQL container, if running on separate machines)
+        dialect: "mysql",
+        logging: false,
+    }
+);
 
 const Logistics = sequelize.define(
     "Logistics",

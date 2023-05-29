@@ -1,5 +1,5 @@
 const LogisticsController = require("../controllers/logistics_controller");
-const OrderController = require("../controllers/order_controller");
+const DeliveryController = require("../controllers/delivery_controller");
 
 module.exports = (app) => {
   // Logistics Company Routes
@@ -10,9 +10,9 @@ module.exports = (app) => {
   app.delete("/api/logistics/:id", LogisticsController.delete)
 
   // Order Status Routes
-  app.post("/api/order/create", OrderController.create);
-  app.put("/api/order/update", OrderController.update);
-  app.get("/api/order/", OrderController.getAll);
-  app.get("/api/order/:id", OrderController.getById);
-  app.delete("/api/order/:id", OrderController.delete)
+  app.post("/api/order/create", DeliveryController.create);
+  app.put("/api/order/update", DeliveryController.update);
+  app.get("/api/order/", DeliveryController.getAll);
+  app.get("/api/order/:id", DeliveryController.getById);
+  app.delete("/api/order/:id", DeliveryController.delete)
 };

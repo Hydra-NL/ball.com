@@ -1,9 +1,9 @@
-const Order = require("../models/order");
+const Delivery = require("../models/delivery");
 const Logistics = require("../models/logistics");
 
 module.exports = {
     create(req, res, next) {
-        Order.create(req.body).then((order) => {
+        Delivery.create(req.body).then((order) => {
             updateStatus(order)
             res.send(order)
         }).catch((err) => {
@@ -13,7 +13,7 @@ module.exports = {
     },
 
     update(req, res, next) {
-        Order.findByPk(req.body.orderId).then((order) => {
+        Delivery.findByPk(req.body.orderId).then((order) => {
             if (order) {
                 const oldStatus = order.status;
                 order.update(req.body).then(updated => {
@@ -35,7 +35,7 @@ module.exports = {
     },
 
     getAll(req, res, next) {
-        Order.findAll().then((order) => {
+        Delivery.findAll().then((order) => {
             res.send(order);
         }).catch((err) => {
             console.error(err);
@@ -44,7 +44,7 @@ module.exports = {
     },
 
     getById(req, res, next) {
-        Order.findByPk(req.params.id).then((order) => {
+        Delivery.findByPk(req.params.id).then((order) => {
             if (order) {
                 res.send(order);
             } else {
@@ -57,7 +57,7 @@ module.exports = {
     },
 
     delete(req, res, next) {
-        Order.findByPk(req.params.id).then((order) => {
+        Delivery.findByPk(req.params.id).then((order) => {
             if (order) {
                 order.destroy().then(_ => {
                     res.send(order);
