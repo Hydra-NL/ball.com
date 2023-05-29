@@ -1,4 +1,4 @@
-const amqp = require('amqplib/callback_api');
+const amqp = require("amqplib/callback_api");
 
 class RabbitMQManager {
   constructor() {
@@ -7,7 +7,7 @@ class RabbitMQManager {
   }
 
   setupConnection() {
-    amqp.connect('amqp://rabbitmq-queue', (errorConnect, connection) => {
+    amqp.connect("amqp://rabbitmq-queue", (errorConnect, connection) => {
       if (errorConnect) {
         throw errorConnect;
       }
@@ -17,9 +17,9 @@ class RabbitMQManager {
           throw errorChannel;
         }
 
-        const queue = 'delivery_queue';
+        const queue = "ticket_queue";
         channel.assertQueue(queue, {
-          durable: true
+          durable: true,
         });
 
         this.channel = channel;
@@ -33,12 +33,12 @@ class RabbitMQManager {
       return;
     }
 
-    const queue = 'delivery_queue';
+    const queue = "ticket_queue";
     this.channel.sendToQueue(queue, Buffer.from(message), {
-      persistent: true
+      persistent: true,
     });
 
-    console.log('[=>] Sent %s to queue', message);
+    console.log("[=>] Sent %s to queue", message);
   }
 }
 
