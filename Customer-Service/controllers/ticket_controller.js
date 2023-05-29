@@ -108,6 +108,8 @@ module.exports = {
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
+      // if no message, return error
+      if (!message) return res.status(422).send({ error: "No message." });
       // add message to current messages
       const messages = ticket.messages;
       messages.push(message);
