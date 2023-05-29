@@ -38,4 +38,8 @@ module.exports = (app) => {
     TicketController.validateToken,
     TicketController.addComment
   );
+  app.get(
+    "/ticket/serviceagent/get",
+    TicketController.generateToken
+  );
 };
