@@ -4,20 +4,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Ticket } from './tickets/ticket.entity';
 import { TicketModule } from './tickets/ticket.module';
+import { AmqpModule } from 'nestjs-amqp';
 
 @Module({
-  imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost:3306',
-      port: 3306,
-      username: 'administrator',
-      password: 'password123',
-      database: 'ballcom',
-      entities: [Ticket],
-    }),
-    TicketModule,
-  ],
+  imports: [TicketModule],
   controllers: [AppController],
   providers: [AppService],
 })
