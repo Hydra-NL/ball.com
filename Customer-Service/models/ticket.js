@@ -62,16 +62,16 @@ const Ticket = sequelize.define(
 sequelize
   .sync({ force: false })
   .then(() => {
-    console.log("Ticket table created successfully!");
+    console.log("Tickets table created successfully!");
     sequelize.query("SHOW TABLES").then((result) => {
       console.log(result[0]);
     });
   })
   .then(() => {
-    console.log("Ticket table synchronized successfully!");
+    console.log("Tickets table synchronized successfully!");
   })
   .catch((err) => {
-    console.error("Unable to synchronize the Ticket table:", err);
+    console.error("Unable to synchronize the Tickets table:", err);
   });
 
 module.exports = Ticket;
