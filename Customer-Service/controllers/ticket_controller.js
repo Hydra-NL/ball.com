@@ -9,11 +9,12 @@ module.exports = {
     const ticket = req.body;
 
     rabbitMQManager.addMessage(
-      `INSERT INTO Tickets (title, description, status, customerId) VALUES ('${ticket.title}', '${ticket.description}', 'Open', '${customerId}')`
+      `INSERT INTO Tickets (title, description, status, customerId, messages) VALUES ('${ticket.title}', '${ticket.description}', 'Open', '${customerId}', '[]')`
     );
     res.status(201).json({
       message: "Ticket created.",
       ticket: req.body,
+      customerId: customerId,
     });
   },
 
@@ -141,11 +142,11 @@ module.exports = {
   },
 
   validateToken(req, res, next) {
-    const token =
-      req.body.token || req.query.token || req.headers["x-access-token"];
-    if (!token) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
       return res.status(401).json({ message: "No token provided" });
     } else {
+      const token = authHeader.substring(7, authHeader.length);
       jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
           return res.status(401).json({ message: "Invalid token" });

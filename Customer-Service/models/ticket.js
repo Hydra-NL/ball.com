@@ -49,7 +49,6 @@ const Ticket = sequelize.define(
     },
     messages: {
       type: DataTypes.JSON,
-      allowNull: false,
       defaultValue: [],
     },
   },
@@ -63,13 +62,18 @@ sequelize
   .sync({ force: false })
   .then(() => {
     console.log("Tickets table created successfully!");
-    sequelize.query("SHOW TABLES").then((result) => {
-      console.log(result[0]);
-    });
+    sequelize
+      .query("SHOW TABLES")
+      .then((result) => {
+        console.log(result[0]);
+      })
+      .then(() => {
+        pool.query(
+          "CREATE TABLE IF NOT EXISTS Tickets (id INT NOT NULL AUTO_INCREMENT, customerId VARCHAR(255) NOT NULL, title VARCHAR(255) NOT NULL, description VARCHAR(255) NOT NULL, status VARCHAR(255) NOT NULL, messages JSON NOT NULL, PRIMARY KEY (id))"
+        );
+      });
   })
-  .then(() => {
-    console.log("Tickets table synchronized successfully!");
-  })
+
   .catch((err) => {
     console.error("Unable to synchronize the Tickets table:", err);
   });
