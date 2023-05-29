@@ -34,6 +34,11 @@ module.exports = (app) => {
     TicketController.deleteTicket
   );
   app.put(
+    "/ticket/:id/status",
+    TicketController.validateToken,
+    TicketController.updateStatus
+  );
+  app.put(
     "/ticket/:id/comment",
     TicketController.validateToken,
     TicketController.addComment

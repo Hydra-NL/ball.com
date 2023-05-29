@@ -7,7 +7,10 @@ module.exports = {
   createTicket(req, res, next) {
     const customerId = req.customerId;
     const ticket = req.body;
-
+    // if there is no customerId in the token, return error
+    if (!customerId) return res.status(401).send({ error: "Unauthorized" });
+    // if there is no title or description, return error
+    if (!ticket.title || !ticket.description) return res.status(422).send({ error: "Title and description are required." });
     rabbitMQManager.addMessage(
       `INSERT INTO Tickets (title, description, status, customerId, messages) VALUES ('${ticket.title}', '${ticket.description}', 'Open', '${customerId}', '[]')`
     );
@@ -108,16 +111,20 @@ module.exports = {
     }
   },
 
-  async updateTicket(req, res, next) {
+  async updateStatus(req, res, next) {
     const ticketId = req.params.id;
     const ticket = await Ticket.findByPk(ticketId);
     if (!ticket) {
       return res.status(422).send({ error: "Ticket does not exist." });
     } else {
-      if (ticket.customerId != req.customerId && req.role != "Service Agent") return res.status(401).send({ error: "Unauthorized" });
-      rabbitMQManager.addMessage(
-        `UPDATE Tickets SET title = '${req.body.title}', description = '${req.body.description}', status = '${req.body.status}' WHERE id = ${ticketId}`
-      );
+      if (req.role != "Service Agent") return res.status(401).send({ error: "Unauthorized" });
+      // if no status, return error
+      if (!req.body.status) return res.status(422).send({ error: "Status is required." });
+      // only accept open or closed as status (case insensitive)
+      if (req.body.status.toLowerCase() != "open" && req.body.status.toLowerCase() != "closed") return res.status(422).send({ error: "Invalid status." });
+      // make first letter uppercase
+      req.body.status = req.body.status.charAt(0).toUpperCase() + req.body.status.slice(1);
+      rabbitMQManager.addMessage(`UPDATE Tickets SET status = '${req.body.status}' WHERE id = ${ticketId}`);
       res.status(200).send({ message: "Ticket updated." });
     }
   },
