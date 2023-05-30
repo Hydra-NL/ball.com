@@ -59,7 +59,7 @@ module.exports = {
     let orderId = uuid.v4();
     let totalPrice = 0;
     // make axios get request to http://localhost:3001/api/shopping-cart with authorization header same as this request
-    await axios.get("http://localhost:3001/api/shopping-cart", {
+    await axios.get("http://customer-management:3001/api/shopping-cart", {
       headers: {
         Authorization: req.headers.authorization,
       },
@@ -71,23 +71,23 @@ module.exports = {
       const products = response.data.shoppingCart;
       // calculate total price
       products.forEach((product) => {
-        totalPrice += product.price * product.quantity;
+        totalPrice += product.productPrice * product.quantity;
       });
 
-      orderProps.orderDate = new Date().toISOString().slice(0, 10);
+      let dateAndTimeISO = new Date().toISOString();
       eventStoreManager.appendToStream(
         `Order-${orderId}`,
         "OrderCreated",
         {
           orderId,
           customerId,
-          orderDate: orderProps.orderDate,
+          orderDate: dateAndTimeISO,
           products,
           totalPrice
         }
       );
       rabbitMQManager.addMessage(
-        `INSERT INTO Orders (orderId, customerId, orderDate, products, totalPrice) VALUES ('${orderId}', '${customerId}', '${orderProps.orderDate}', '${JSON.stringify(products)}', ${totalPrice})`
+        `INSERT INTO Orders (orderId, customerId, orderDate, products, totalPrice) VALUES ('${orderId}', '${customerId}', '${dateAndTimeISO}', '${JSON.stringify(products)}', ${totalPrice})`
       );
       return res
         .status(201)
@@ -95,9 +95,9 @@ module.exports = {
           message: "Successfully created order",
           products: products,
           orderId: orderId,
+          totalPrice: totalPrice,
         });
-    }
-    ).catch((err) => {
+    }).catch((err) => {
       console.error(err);
       return res.status(404).json({ message: "No products found" });
     });
