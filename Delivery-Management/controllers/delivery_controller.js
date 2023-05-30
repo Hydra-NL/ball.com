@@ -3,8 +3,10 @@ const Delivery = require("../models/delivery");
 const Logistics = require("../models/logistics");
 const http = require('http');
 const config = require("../config.json");
+const Util = require("../util/util");
 const Status = require("../util/status");
 const {isEmpty} = require("../util/util");
+const {appendToStream} = require("../events/eventstore_manager");
 
 module.exports = {
     getAll(req, res, next) {
@@ -13,28 +15,9 @@ module.exports = {
         });
     },
 
-    create(req, res, next) {
-        const orderId = req.body.orderId;
-        const logisticsId = req.body.logisticsId;
-
-        if (isEmpty(orderId, "orderId", res) || isEmpty(logisticsId, "logisticsId", res)) {
-            return;
-        }
-
-        Delivery.findByPk(orderId).then((order) => {
-            if (order) {
-                return res.status(400).send({error: "Delivery already exists for order " + orderId, order: order});
-            }
-
-            Logistics.findByPk(logisticsId).then((logistics) => {
-                if (!logistics) {
-                    return res.status(400).send({error: "No logistics company found with ID " + logisticsId});
-                }
-
-                RabbitMQPublisher.addMessage(`INSERT INTO Deliveries (orderId, logisticsId, status) VALUES ('${orderId}', '${logisticsId}', '${Status.Pending}')`)
-                return res.status(201).json({message: "Successfully created delivery", logistics: logistics});
-            });
-        });
+    async create(req, res, next) {
+        const response = await Util.createDelivery(req.body);
+        res.status(response.status).send(response);
     },
 
     updateStatus(req, res, next) {
@@ -53,7 +36,7 @@ module.exports = {
             RabbitMQPublisher.addMessage(`UPDATE Deliveries SET status = '${status}' WHERE orderId = '${orderId}'`)
             const oldStatus = delivery.status;
             if (oldStatus !== status) {
-                updateStatus(delivery)
+                onUpdateStatus(delivery)
             }
 
             return res.status(200).json({message: "Successfully updated delivery"});
@@ -110,19 +93,16 @@ module.exports = {
     }
 };
 
-function updateStatus(order) {
-    const orderId = order.orderId;
-    const newStatus = order.status
-    Logistics.findByPk(order.logisticsId).then((logistics) => {
+function onUpdateStatus(delivery) {
+    const orderId = delivery.orderId;
+    const newStatus = delivery.status
+    Logistics.findByPk(delivery.logisticsId).then((logistics) => {
 
-        // TODO: FIRE UpdatedDeliveryStatus EVENT
-        console.log(`UpdatedDeliveryStatus: ${
-            JSON.stringify({
-                orderId: orderId,
-                newStatus: newStatus,
-                logistics: logistics
-            })
-        }`)
+        appendToStream(`Status: ${newStatus}`, "UpdatedDeliveryStatus", {
+            orderId: orderId,
+            newStatus: newStatus,
+            logistics: logistics
+        })
     });
 }
 

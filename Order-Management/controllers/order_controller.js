@@ -2,6 +2,7 @@ const Order = require("../models/order");
 const orderService = require("../services/order_service");
 const uuid = require("uuid");
 const rabbitMQManager = require('../rabbitmq/rabbitMQ_publisher');
+const eventStoreManager = require("../eventstore/eventstore_manager");
 const config = require("../config.json");
 const jwt = require("jsonwebtoken");
 
@@ -55,11 +56,6 @@ module.exports = {
   createOrder(req, res, next) {
     const customerId = req.customerId;
     const orderProps = req.body;
-    // check for list of products and quantities like this:
-    // [
-    //   { productId: 1, quantity: 2 },
-    //   { productId: 2, quantity: 1 }
-    // ]
     let orderId = uuid.v4();
     if (!orderProps.products)
       return res.status(400).json({ message: "No products provided" });
@@ -74,6 +70,16 @@ module.exports = {
         products.push(product);
       });
       orderProps.orderDate = new Date().toISOString().slice(0, 10);
+      eventStoreManager.appendToStream(
+        `Order-${orderId}`,
+        "OrderCreated",
+        {
+          orderId,
+          customerId,
+          orderDate: orderProps.orderDate,
+          products,
+        }
+      );
       rabbitMQManager.addMessage(
         `INSERT INTO Orders (orderId, customerId, orderDate, products) VALUES ('${orderId}', '${customerId}', '${orderProps.orderDate}', '${JSON.stringify(products)}')`
       );
@@ -100,6 +106,14 @@ module.exports = {
         if (orders[0].customerId != req.customerId)
           return res.status(401).json({ message: "Unauthorized" });
         else {
+          eventStoreManager.appendToStream(
+            `Order-${orderId}`,
+            "OrderUpdated",
+            {
+              orderId,
+              products: orderProps.products,
+            }
+          );
           // update the order
           rabbitMQManager.addMessage(
             `UPDATE Orders SET products = '${orderProps.products}' WHERE orderId = '${orderId}'`
@@ -124,6 +138,13 @@ module.exports = {
         if (order.customerId != req.customerId)
           return res.status(401).json({ message: "Unauthorized" });
         else {
+          eventStoreManager.appendToStream(
+            `Order-${orderId}`,
+            "OrderDeleted",
+            {
+              orderId,
+            }
+          );
           rabbitMQManager.addMessage(
             `DELETE FROM Orders WHERE orderId = '${orderId}'`
           );
