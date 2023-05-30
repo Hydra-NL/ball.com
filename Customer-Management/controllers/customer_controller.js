@@ -1,6 +1,8 @@
 const Customer = require("../models/customer");
 const customerService = require("../services/customer_service");
 const rabbitMQManager = require("./rabbitMQ_publisher");
+const config = require("../config.json");
+const jwt = require("jsonwebtoken");
 const uuid = require("uuid");
 
 module.exports = {
@@ -51,13 +53,20 @@ module.exports = {
   },
 
   indexOne(req, res, next) {
-    const customerId = req.params.id;
+    const customerId = req.params.customerId; // Assuming customerId is provided in the request parameters
 
-    Customer.findByPk(customerId, {
+    Customer.findOne({
+      where: { customerId: customerId },
       attributes: { exclude: ["hash"] },
+      raw: true,
     })
       .then((customer) => {
-        res.send(customer);
+        if (customer) {
+          res.send(customer);
+        } else {
+          // Handle case when customer is not found
+          res.status(404).json({ error: "Customer not found" });
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -66,42 +75,44 @@ module.exports = {
   },
 
   remove(req, res, next) {
-    const customerId = req.params.id;
+    const token = req.headers.authorization; // Get the token from the request headers
 
-    Customer.findOne({
-      where: {
-        id: customerId,
-      },
-    })
-      .then((customer) => {
-        if (!customer) {
-          // If customer not found, send an error response in the specified format
-          return res.status(404).json({
-            error: "Customer not found",
-          });
-        }
+    // Verify and decode the token
+    jwt.verify(token, config.secret, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
 
-        const customerName = customer.firstName; // Assuming the name field exists in the Customer model
+      const customerId = decoded.sub; // Extract the customerId from the decoded token
 
-        Customer.destroy({
-          where: {
-            id: customerId,
-          },
-        })
-          .then(() => {
-            res.json({
-              message: `Customer "${customerName}" has been removed`,
+      Customer.findOne({
+        where: { customerId: customerId },
+        raw: true,
+      })
+        .then((customer) => {
+          if (!customer) {
+            // If customer not found, send an error response in the specified format
+            return res.status(404).json({
+              error: "Customer not found",
             });
-          })
-          .catch((err) => {
+          }
+
+          const customerName = customer.firstName; // Assuming the name field exists in the Customer model
+
+          rabbitMQManager.addMessage(`DELETE FROM Customers WHERE customerId = '${customerId}'`);
+
+          try {
+            res.json({ message: `Customer "${customerName}" has been removed` });
+          } catch (err) {
             console.error(err);
             next(err);
-          });
-      })
-      .catch((err) => {
-        console.error(err);
-        next(err);
-      });
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          next(err);
+        });
+    });
   },
 
   greeting(req, res) {

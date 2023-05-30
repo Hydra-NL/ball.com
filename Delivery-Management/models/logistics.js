@@ -26,10 +26,9 @@ const sequelize = new Sequelize(
 const Logistics = sequelize.define(
     "Logistics",
     {
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true,
+        logisticsId: {
+            type: DataTypes.STRING,
+            primaryKey: true
         },
         name: {
             type: DataTypes.STRING(50),
@@ -61,7 +60,7 @@ sequelize
     .sync({force: false})
     .then(() => {
         console.log("Logistics table created successfully!");
-        pool.query("CREATE TABLE IF NOT EXISTS Logistics (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL, description VARCHAR(255), deliveryCosts INT NOT NULL)");
+        pool.query("CREATE TABLE IF NOT EXISTS Logistics (logisticsId VARCHAR(36) PRIMARY KEY, name VARCHAR(50) NOT NULL, description VARCHAR(255), deliveryCosts INT NOT NULL)");
     })
     .catch((err) => {
         console.log(err);
