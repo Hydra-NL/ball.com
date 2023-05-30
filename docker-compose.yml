@@ -47,6 +47,21 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
+  eventstoredb:
+    networks:
+      - ballcom
+    image: eventstore/eventstore:latest
+    container_name: eventstoredb
+    ports:
+      - 2113:2113
+      - 1113:1113
+    environment:
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+    command: --insecure
+    volumes:
+      - eventstore-data:/data/db
+
   order-management:
     networks:
       - ballcom
@@ -59,6 +74,7 @@ services:
       - mysql-write
       - mysql-read
       - rabbitmq
+      - eventstoredb
     environment:
       NODE_ENV: production
       MYSQL_HOST: mysql-write
@@ -171,6 +187,7 @@ volumes:
   mysql-write:
   mysql-read:
   rabbitmq-data:
+  eventstore-data:
 
 networks:
   ballcom:
