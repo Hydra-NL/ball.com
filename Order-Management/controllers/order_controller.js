@@ -2,6 +2,7 @@ const Order = require("../models/order");
 const orderService = require("../services/order_service");
 const uuid = require("uuid");
 const rabbitMQManager = require('../rabbitmq/rabbitMQ_publisher');
+const eventStoreManager = require("../eventstore/eventstore_manager");
 const config = require("../config.json");
 const jwt = require("jsonwebtoken");
 
@@ -10,23 +11,11 @@ module.exports = {
     const customerId = req.customerId;
     const orderId = req.params.id;
 
-    Order.findAll({ where: { orderId: orderId, customerId: customerId } })
-      .then((orders) => {
-        // if no orders found, return message
-        if (orders.length == 0)
-          return res.status(404).json({ message: "No order found" });
-        // group products with same orderId together
-        const groupedOrders = {};
-        orders.forEach((order) => {
-          if (!groupedOrders[order.orderId]) groupedOrders[order.orderId] = [];
-          groupedOrders[order.orderId].push(order);
-        });
-        return res.send(groupedOrders);
+    Order.findOne({ where: { orderId: orderId, customerId: customerId } }).then
+      ((order) => {
+        if (!order) return res.status(404).json({ message: "Order not found" });
+        return res.send(order);
       })
-      .catch((err) => {
-        console.error(err);
-        next(err);
-      });
   },
 
   index(req, res, next) {
@@ -36,13 +25,7 @@ module.exports = {
         // if no orders found, return message
         if (orders.length == 0)
           return res.status(404).json({ message: "No orders found" });
-        // group products with same orderId together
-        const groupedOrders = {};
-        orders.forEach((order) => {
-          if (!groupedOrders[order.orderId]) groupedOrders[order.orderId] = [];
-          groupedOrders[order.orderId].push(order);
-        });
-        return res.send(groupedOrders);
+        return res.send(orders);
       })
       .catch((err) => {
         console.error(err);
@@ -73,11 +56,6 @@ module.exports = {
   createOrder(req, res, next) {
     const customerId = req.customerId;
     const orderProps = req.body;
-    // check for list of products and quantities like this:
-    // [
-    //   { productId: 1, quantity: 2 },
-    //   { productId: 2, quantity: 1 }
-    // ]
     let orderId = uuid.v4();
     if (!orderProps.products)
       return res.status(400).json({ message: "No products provided" });
@@ -90,13 +68,21 @@ module.exports = {
             .status(400)
             .json({ message: `Invalid product found in order: ${product}` });
         products.push(product);
-        // set orderDate to string of current date
-        orderProps.orderDate = new Date().toISOString().slice(0, 10);
-        // add the sql query to create the order to the queue
-        rabbitMQManager.addMessage(
-          `INSERT INTO Orders (orderId, customerId, productId, quantity, orderDate, orderStatus) VALUES ('${orderId}', '${customerId}', ${product.productId}, ${product.quantity}, '${orderProps.orderDate}', 'Pending')`
-        );
       });
+      orderProps.orderDate = new Date().toISOString().slice(0, 10);
+      eventStoreManager.appendToStream(
+        `Order-${orderId}`,
+        "OrderCreated",
+        {
+          orderId,
+          customerId,
+          orderDate: orderProps.orderDate,
+          products,
+        }
+      );
+      rabbitMQManager.addMessage(
+        `INSERT INTO Orders (orderId, customerId, orderDate, products) VALUES ('${orderId}', '${customerId}', '${orderProps.orderDate}', '${JSON.stringify(products)}')`
+      );
       return res
         .status(201)
         .json({
@@ -120,21 +106,23 @@ module.exports = {
         if (orders[0].customerId != req.customerId)
           return res.status(401).json({ message: "Unauthorized" });
         else {
-          rabbitMQManager.addMessage(
-            `UPDATE Orders SET orderStatus = '${orderProps.orderStatus}' WHERE orderId = '${orderId}'`
+          eventStoreManager.appendToStream(
+            `Order-${orderId}`,
+            "OrderUpdated",
+            {
+              orderId,
+              products: orderProps.products,
+            }
           );
-          return res
-            .status(200)
-            .json({ message: "Successfully updated order" });
+          // update the order
+          rabbitMQManager.addMessage(
+            `UPDATE Orders SET products = '${orderProps.products}' WHERE orderId = '${orderId}'`
+          );
         }
       })
       .catch((err) => {
         console.error(err);
-        // on error, add message to queue no matter what
-        rabbitMQManager.addMessage(
-          `UPDATE Orders SET orderStatus = '${orderProps.orderStatus}' WHERE orderId = '${orderId}'`
-        );
-        return res.status(200).json({ message: "Successfully updated order" });
+        next(err);
       });
   },
 
@@ -150,6 +138,13 @@ module.exports = {
         if (order.customerId != req.customerId)
           return res.status(401).json({ message: "Unauthorized" });
         else {
+          eventStoreManager.appendToStream(
+            `Order-${orderId}`,
+            "OrderDeleted",
+            {
+              orderId,
+            }
+          );
           rabbitMQManager.addMessage(
             `DELETE FROM Orders WHERE orderId = '${orderId}'`
           );
@@ -160,11 +155,7 @@ module.exports = {
       })
       .catch((err) => {
         console.error(err);
-        // on error, add message to queue no matter what
-        rabbitMQManager.addMessage(
-          `DELETE FROM Orders WHERE orderId = '${orderId}'`
-        );
-        return res.status(200).json({ message: "Successfully deleted order" });
+        next(err);
       });
   },
 
