@@ -40,34 +40,32 @@ module.exports = {
           await axios.get(`http://supplier-management:3002/products/${productId}`)
             .then((response) => {
               const product = response.data;
-              if (response.data.error) return res.status(404).json({ error: "Product not found" });
-              shoppingCart.push(product);
+              shoppingCart.push({
+                productId: product.id,
+                productName: product.product_name,
+                productPrice: product.product_price,
+                quantity: 1,
+              });
+
+              // merge products with same productId, and update quantity
+              var mergedShoppingCart = [];
+              shoppingCart.forEach((product) => {
+                const existingProduct = mergedShoppingCart.find((p) => p.productId === product.productId);
+                if (existingProduct) {
+                  existingProduct.quantity += 1;
+                } else {
+                  mergedShoppingCart.push(product);
+                }
+              });
+
+              // Update the shoppingCart (JSON datatype) field of the existing customer record
+              rabbitMQManager.addMessage(`UPDATE Customers SET shoppingCart = '${JSON.stringify(mergedShoppingCart)}' WHERE customerId = '${customerId}'`);
+              return res.status(200).json({ message: "Product added to shopping cart", shoppingCart: mergedShoppingCart });
             })
             .catch((err) => {
               console.error(err);
               return res.status(404).json({ error: "Product not found" });
             });
-
-          const updatedShoppingCart = JSON.stringify(shoppingCart);
-
-          // merge products with same productId, and update quantity
-          const mergedShoppingCart = [];
-          updatedShoppingCart.forEach((product) => {
-            const existingProduct = mergedShoppingCart.find((p) => p.productId === product.productId);
-            if (existingProduct) {
-              existingProduct.quantity += product.quantity;
-            } else {
-              product.quantity = 1;
-              mergedShoppingCart.push(product);
-            }
-          });
-
-
-          // Update the shoppingCart (JSON datatype) field of the existing customer record
-          return rabbitMQManager.addMessage(`UPDATE Customers SET shoppingCart = '${updatedShoppingCart}' WHERE customerId = '${customerId}'`);
-        })
-        .then(() => {
-          res.status(200).json({ message: "Product added to shopping cart" });
         })
         .catch((err) => {
           console.error(err);
@@ -90,7 +88,7 @@ module.exports = {
       }
 
       const customerId = decoded.sub; // Extract the customerId from the decoded token
-      const productIndex = req.body.productIndex;
+      const productId = req.body.productId;
 
       Customer.findOne({
         where: { customerId: customerId },
@@ -106,26 +104,30 @@ module.exports = {
             return res.status(400).json({ error: "Shopping cart is empty" });
           }
 
-          if (shoppingCart.length <= productIndex || productIndex < 0) {
-            throw new Error("Invalid product index");
+          const productIndex = shoppingCart.findIndex((product) => product.productId === productId);
+
+          if (productIndex === -1) {
+            return res.status(400).json({ error: "Product not found in shopping cart" });
           }
 
-          shoppingCart.splice(productIndex, 1);
+          const product = shoppingCart[productIndex];
+
+          if (product.quantity === 1) {
+            shoppingCart.splice(productIndex, 1);
+          } else {
+            product.quantity--;
+          }
 
           const updatedShoppingCart = JSON.stringify(shoppingCart);
 
           // Update the shoppingCart (JSON datatype) field of the existing customer record
           return Promise.resolve(rabbitMQManager.addMessage(`UPDATE Customers SET shoppingCart = '${updatedShoppingCart}' WHERE customerId = '${customerId}'`)).then(() => {
-            res.status(200).json({ message: "Item removed from shopping cart" });
+            res.status(200).json({ message: "Item removed from shopping cart", shoppingCart: shoppingCart });
           });
         })
         .catch((err) => {
           console.error(err);
-          if (err.message === "Invalid product index") {
-            res.status(400).json({ error: "Invalid product index" });
-          } else {
-            res.status(500).json({ error: "Internal server error" });
-          }
+          res.status(500).json({ error: "Internal server error" });
         });
     });
   },
