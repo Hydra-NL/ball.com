@@ -2,9 +2,10 @@ const Customer = require("../models/customer");
 const rabbitMQManager = require("./rabbitMQ_publisher");
 const config = require("../config.json");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 
 module.exports = {
-  addItem(req, res, next) {
+  async addItem(req, res, next) {
     const token = req.headers.authorization; // Get the token from the request headers
 
     // Verify and decode the token
@@ -13,14 +14,14 @@ module.exports = {
         return res.status(401).json({ error: "Invalid token" });
       }
 
-      const customerId = decoded.sub; // Extract the customerId from the decoded token
-      const productName = req.body.productName;
+      const customerId = decoded.sub;
+      const productId = req.body.productId
 
       Customer.findOne({
         where: { customerId: customerId },
         raw: true,
       })
-        .then((customerData) => {
+        .then(async (customerData) => {
           if (!customerData) {
             return res.status(404).json({ error: "Customer not found" });
           }
@@ -35,9 +36,32 @@ module.exports = {
             throw new Error("Shopping cart limit reached");
           }
 
-          shoppingCart.push(productName);
+          // make request to http://supplier-management:3002/products/:productId. if no error, add product to shopping cart
+          await axios.get(`http://supplier-management:3002/products/${productId}`)
+            .then((response) => {
+              const product = response.data;
+              if (response.data.error) return res.status(404).json({ error: "Product not found" });
+              shoppingCart.push(product);
+            })
+            .catch((err) => {
+              console.error(err);
+              return res.status(404).json({ error: "Product not found" });
+            });
 
           const updatedShoppingCart = JSON.stringify(shoppingCart);
+
+          // merge products with same productId, and update quantity
+          const mergedShoppingCart = [];
+          updatedShoppingCart.forEach((product) => {
+            const existingProduct = mergedShoppingCart.find((p) => p.productId === product.productId);
+            if (existingProduct) {
+              existingProduct.quantity += product.quantity;
+            } else {
+              product.quantity = 1;
+              mergedShoppingCart.push(product);
+            }
+          });
+
 
           // Update the shoppingCart (JSON datatype) field of the existing customer record
           return rabbitMQManager.addMessage(`UPDATE Customers SET shoppingCart = '${updatedShoppingCart}' WHERE customerId = '${customerId}'`);
