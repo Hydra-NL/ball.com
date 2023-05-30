@@ -2,10 +2,10 @@ const Customer = require("../models/customer");
 
 module.exports = {
   addItem(req, res, next) {
-    const customerId = req.body.customerId;
+    const customerId = req.customerId;
     const productName = req.body.productName;
 
-    Customer.findByPk(customerId)
+    Customer.findOne({ where: { id: customerId } })
       .then((customer) => {
         if (!customer) {
           return res.status(404).json({ error: "Customer not found" });
@@ -52,10 +52,10 @@ module.exports = {
   },
 
   removeItem(req, res, next) {
-    const customerId = req.body.customerId;
+    const customerId = req.customerId;
     const productIndex = req.body.productIndex;
 
-    Customer.findByPk(customerId)
+    Customer.findOne({ where: { id: customerId } })
       .then((customer) => {
         if (!customer) {
           return res.status(404).json({ error: "Customer not found" });
@@ -102,7 +102,7 @@ module.exports = {
   emptyCart(req, res, next) {
     const customerId = req.params.id;
 
-    Customer.findByPk(customerId)
+    Customer.findOne({ where: { id: customerId } })
       .then((customer) => {
         if (!customer) {
           return res.status(404).json({ error: "Customer not found" });
@@ -130,7 +130,7 @@ module.exports = {
   index(req, res, next) {
     const customerId = req.params.id;
 
-    Customer.findByPk(customerId)
+    Customer.findOne({ where: { id: customerId } })
       .then((customer) => {
         if (!customer) {
           return res.status(404).json({ error: "Customer not found" });
@@ -152,5 +152,25 @@ module.exports = {
         console.error(err);
         next(err);
       });
+  },
+
+  validateToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: "No token provided" });
+    } else {
+      const token = authHeader.substring(7, authHeader.length);
+      jwt.verify(token, config.secret, (err, decoded) => {
+        if (err) {
+          return res.status(401).json({ message: "Invalid token" });
+        } else {
+          // check if token has customerId
+          if (!decoded.sub)
+            return res.status(401).json({ message: "Invalid token" });
+          req.customerId = decoded.sub;
+          next();
+        }
+      });
+    }
   },
 };

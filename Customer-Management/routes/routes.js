@@ -12,8 +12,8 @@ module.exports = (app) => {
   app.delete("/api/customers/:id", CustomerController.remove);
 
   // Shopping Cart routes
-  app.put("/api/shopping-cart", ShoppingCartController.addItem);
+  app.put("/api/shopping-cart", ShoppingCartController.validateToken, ShoppingCartController.addItem);
   app.get("/api/shopping-cart/:id", ShoppingCartController.index);
-  app.put("/api/shopping-cart/remove", ShoppingCartController.removeItem);
-  app.delete("/api/shopping-cart/:id", ShoppingCartController.emptyCart);
+  app.put("/api/shopping-cart/remove", ShoppingCartController.validateToken, ShoppingCartController.removeItem);
+  app.delete("/api/shopping-cart/:id", ShoppingCartController.validateToken, ShoppingCartController.emptyCart);
 };
