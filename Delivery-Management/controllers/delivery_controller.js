@@ -13,12 +13,21 @@ module.exports = {
         });
     },
 
-    create(req, res, next) {
+    async create(req, res, next) {
         const orderId = req.body.orderId;
-        const logisticsId = req.body.logisticsId;
+        let logisticsId = req.body.logisticsId;
 
-        if (isEmpty(orderId, "orderId", res) || isEmpty(logisticsId, "logisticsId", res)) {
+        if (isEmpty(orderId, "orderId", res)) {
             return;
+        }
+
+        if (!logisticsId) {
+            const cheapest = await getCheapestLogistics();
+            if (cheapest == null) {
+                return res.status(400).send({error: "Cannot create delivery without logistics company!"});
+            }
+
+            logisticsId = cheapest.logisticsId;
         }
 
         Delivery.findByPk(orderId).then((order) => {
@@ -124,6 +133,21 @@ function updateStatus(order) {
             })
         }`)
     });
+}
+
+async function getCheapestLogistics() {
+    const allLogistics = await Logistics.findAll();
+
+    let cheapest = null
+    for (let i = 0; i < allLogistics.length; i++) {
+        const logistics = allLogistics[i];
+
+        if (cheapest == null || logistics.deliveryCosts < cheapest.deliveryCosts) {
+            cheapest = logistics;
+        }
+    }
+
+    return cheapest;
 }
 
 function getBody(request) {
