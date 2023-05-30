@@ -47,6 +47,10 @@ const Order = sequelize.define(
       type: DataTypes.JSON,
       defaultValue: [],
     },
+    totalPrice: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
   },
   {
     timestamps: false,
@@ -65,7 +69,7 @@ sequelize
       })
       // also add Order table to the write database
       .then(() => {
-        pool.query("CREATE TABLE IF NOT EXISTS Orders (id INT AUTO_INCREMENT PRIMARY KEY, orderId VARCHAR(255) NOT NULL, customerId VARCHAR(255) NOT NULL, orderDate VARCHAR(255) NOT NULL, products JSON NOT NULL)")
+        pool.query("CREATE TABLE IF NOT EXISTS Orders (id INT NOT NULL AUTO_INCREMENT, orderId VARCHAR(255) NOT NULL, customerId VARCHAR(255) NOT NULL, orderDate VARCHAR(255) NOT NULL, products JSON NOT NULL, totalPrice FLOAT NOT NULL, PRIMARY KEY (id))")
       })
   })
   .catch((err) => {
