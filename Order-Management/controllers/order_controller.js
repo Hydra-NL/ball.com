@@ -56,56 +56,51 @@ module.exports = {
 
   async createOrder(req, res, next) {
     const customerId = req.customerId;
-    const orderProps = req.body;
     let orderId = uuid.v4();
-    if (!orderProps.products)
-      return res.status(400).json({ message: "No products provided" });
-    else {
-      let totalPrice = 0;
-      // make axios get request to http://localhost:3001/api/shopping-cart with authorization header same as this request
-      await axios.get("http://localhost:3001/api/shopping-cart", {
-        headers: {
-          Authorization: req.headers.authorization,
-        },
-      }).then((response) => {
-        // if shopping cart is null, return message
-        if (response.data.shoppingCart == null) return res.status(404).json({ message: "No products found" });
-        // if no products found, return message
-        if (response.data.shoppingCart.length == 0) return res.status(404).json({ message: "No products found" });
-        const products = response.data.shoppingCart;
-        // calculate total price
-        products.forEach((product) => {
-          totalPrice += product.price * product.quantity;
-        });
-
-        orderProps.orderDate = new Date().toISOString().slice(0, 10);
-        eventStoreManager.appendToStream(
-          `Order-${orderId}`,
-          "OrderCreated",
-          {
-            orderId,
-            customerId,
-            orderDate: orderProps.orderDate,
-            products,
-            totalPrice
-          }
-        );
-        rabbitMQManager.addMessage(
-          `INSERT INTO Orders (orderId, customerId, orderDate, products, totalPrice) VALUES ('${orderId}', '${customerId}', '${orderProps.orderDate}', '${JSON.stringify(products)}', ${totalPrice})`
-        );
-        return res
-          .status(201)
-          .json({
-            message: "Successfully created order",
-            products: products,
-            orderId: orderId,
-          });
-      }
-      ).catch((err) => {
-        console.error(err);
-        return res.status(404).json({ message: "No products found" });
+    let totalPrice = 0;
+    // make axios get request to http://localhost:3001/api/shopping-cart with authorization header same as this request
+    await axios.get("http://localhost:3001/api/shopping-cart", {
+      headers: {
+        Authorization: req.headers.authorization,
+      },
+    }).then((response) => {
+      // if shopping cart is null, return message
+      if (response.data.shoppingCart == null) return res.status(404).json({ message: "No products found" });
+      // if no products found, return message
+      if (response.data.shoppingCart.length == 0) return res.status(404).json({ message: "No products found" });
+      const products = response.data.shoppingCart;
+      // calculate total price
+      products.forEach((product) => {
+        totalPrice += product.price * product.quantity;
       });
+
+      orderProps.orderDate = new Date().toISOString().slice(0, 10);
+      eventStoreManager.appendToStream(
+        `Order-${orderId}`,
+        "OrderCreated",
+        {
+          orderId,
+          customerId,
+          orderDate: orderProps.orderDate,
+          products,
+          totalPrice
+        }
+      );
+      rabbitMQManager.addMessage(
+        `INSERT INTO Orders (orderId, customerId, orderDate, products, totalPrice) VALUES ('${orderId}', '${customerId}', '${orderProps.orderDate}', '${JSON.stringify(products)}', ${totalPrice})`
+      );
+      return res
+        .status(201)
+        .json({
+          message: "Successfully created order",
+          products: products,
+          orderId: orderId,
+        });
     }
+    ).catch((err) => {
+      console.error(err);
+      return res.status(404).json({ message: "No products found" });
+    });
   },
 
   // updateOrder
