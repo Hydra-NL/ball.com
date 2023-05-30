@@ -12,8 +12,9 @@ async function subscribeToStream() {
 
     for await (const resolvedEvent of subscription) {
         const event = resolvedEvent.event;
-        if (event.type === "OrderCreated") {
-            console.log("Received event:", event);
+        if (listenEvents.includes(event.type)) {
+            console.log(`Received event: ${event.type}`);
+            console.log(event.data);
         }
     }
 }
