@@ -200,8 +200,6 @@ module.exports = {
       token = token.slice(7, token.length);
     }
 
-    console.log(token);
-
     // Verify and decode the token
     jwt.verify(token, config.secret, (err, decoded) => {
       if (err) {
