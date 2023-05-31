@@ -75,7 +75,12 @@ module.exports = {
   },
 
   remove(req, res, next) {
-    const token = req.headers.authorization; // Get the token from the request headers
+    var token = req.headers.authorization; // Get the token from the request headers
+
+    // remove bearer if it exists
+    if (token.startsWith("Bearer ")) {
+      token = token.slice(7, token.length);
+    }
 
     // Verify and decode the token
     jwt.verify(token, config.secret, (err, decoded) => {
