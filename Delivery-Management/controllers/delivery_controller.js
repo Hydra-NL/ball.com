@@ -5,8 +5,8 @@ const http = require('http');
 const config = require("../config.json");
 const Util = require("../util/util");
 const Status = require("../util/status");
-const {isEmpty} = require("../util/util");
-const {appendToStream} = require("../events/eventstore_manager");
+const { isEmpty } = require("../util/util");
+const { appendToStream } = require("../events/eventstore_manager");
 
 module.exports = {
     getAll(req, res, next) {
@@ -25,12 +25,12 @@ module.exports = {
         const status = req.body.status;
 
         if (!Status.isValid(status)) {
-            return res.status(400).send({error: "Status is invalid: " + status, options: Status.Values});
+            return res.status(400).send({ error: "Status is invalid: " + status, options: Status.Values });
         }
 
         Delivery.findByPk(orderId).then((delivery) => {
             if (!delivery) {
-                return res.status(404).send({error: "There are no deliveries with order ID " + orderId});
+                return res.status(404).send({ error: "There are no deliveries with order ID " + orderId });
             }
 
             RabbitMQPublisher.addMessage(`UPDATE Deliveries SET status = '${status}' WHERE orderId = '${orderId}'`)
@@ -39,7 +39,7 @@ module.exports = {
                 onUpdateStatus(delivery)
             }
 
-            return res.status(200).json({message: "Successfully updated delivery"});
+            return res.status(200).json({ message: "Successfully updated delivery" });
         })
     },
 
@@ -48,11 +48,11 @@ module.exports = {
 
         Delivery.findByPk(req.params.id).then((delivery) => {
             if (!delivery) {
-                return res.status(404).send({error: "There are no deliveries with order ID " + orderId});
+                return res.status(404).send({ error: "There are no deliveries with order ID " + orderId });
             }
 
             RabbitMQPublisher.addMessage(`DELETE FROM Deliveries WHERE orderId = '${orderId}'`)
-            return res.status(200).json({message: "Successfully deleted order"});
+            return res.status(200).json({ message: "Successfully deleted delivery for order ID " + orderId });
         });
     },
 
