@@ -6,7 +6,12 @@ const axios = require("axios");
 
 module.exports = {
   async addItem(req, res, next) {
-    const token = req.headers.authorization; // Get the token from the request headers
+    var token = req.headers.authorization; // Get the token from the request headers
+
+    // remove bearer if it exists
+    if (token.startsWith("Bearer ")) {
+      token = token.slice(7, token.length);
+    }
 
     // Verify and decode the token
     jwt.verify(token, config.secret, (err, decoded) => {
@@ -79,7 +84,12 @@ module.exports = {
   },
 
   removeItem(req, res, next) {
-    const token = req.headers.authorization; // Get the token from the request headers
+    var token = req.headers.authorization; // Get the token from the request headers
+
+    // remove bearer if it exists
+    if (token.startsWith("Bearer ")) {
+      token = token.slice(7, token.length);
+    }
 
     // Verify and decode the token
     jwt.verify(token, config.secret, (err, decoded) => {
@@ -133,7 +143,12 @@ module.exports = {
   },
 
   emptyCart(req, res, next) {
-    const token = req.headers.authorization; // Get the token from the request headers
+    var token = req.headers.authorization; // Get the token from the request headers
+
+    // remove bearer if it exists
+    if (token.startsWith("Bearer ")) {
+      token = token.slice(7, token.length);
+    }
 
     // Verify and decode the token
     jwt.verify(token, config.secret, (err, decoded) => {

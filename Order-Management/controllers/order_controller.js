@@ -39,7 +39,13 @@ module.exports = {
     if (!authHeader) {
       return res.status(401).json({ message: "No token provided" });
     } else {
-      const token = authHeader.substring(7, authHeader.length);
+      var token = req.headers.authorization; // Get the token from the request headers
+
+      // remove bearer if it exists
+      if (token.startsWith("Bearer ")) {
+        token = token.slice(7, token.length);
+      }
+
       jwt.verify(token, config.secret, (err, decoded) => {
         if (err) {
           return res.status(401).json({ message: "Invalid token" });
