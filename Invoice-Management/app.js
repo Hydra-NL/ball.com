@@ -2,7 +2,7 @@ const express = require("express");
 const routes = require("./routes/routes");
 const bodyParser = require("body-parser");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3005;
 
 const RabbitMQConsumer = require('./rabbitmq/rabbitMQ_consumer');
 const RabbitMQRead = require('./rabbitmq/rabbitMQ_read');
