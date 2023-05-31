@@ -8,7 +8,9 @@ module.exports = {
 };
 
 async function authenticate({ email, password }) {
-  const customer = await Customer.findOne({ email });
+  const customer = await Customer.findOne({
+    where: { email },
+  });
   if (customer && password == customer.hash) {
     const token = jwt.sign({ sub: customer.customerId }, config.secret, { expiresIn: "7d" });
     return {
