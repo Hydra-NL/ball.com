@@ -5,14 +5,14 @@ Dit project maakt gebruik van Docker om verschillende services te beheren zoals 
 2. Alle containers, images en persistent volumes worden nu automatisch aangemaakt
 
 ### MySQL
-MySQL is nu toegankelijk met de volgende gegevens:
+MySQL is toegankelijk met de volgende gegevens:
 - Database: ballcom
 - Username: administrator
 - Password: password123
 - Host: **mysql-write** voor write operaties en **mysql-read** voor read operaties
 
 ### RabbitMQ
-RabbitMQ is nu toegankelijk via http://localhost:15672 (web dashboard) en **rabbitmq-queue** wanneer je RabbitMQ wilt bereiken via de API in Docker
+RabbitMQ is toegankelijk via http://localhost:15672 (web dashboard) en **rabbitmq-queue** wanneer je RabbitMQ wilt bereiken via de API in Docker
 - Username: guest
 - Password: guest
 
