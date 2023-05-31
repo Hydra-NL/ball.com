@@ -6,7 +6,7 @@ module.exports = (app) => {
   // Invoice routes
   app.get("/api/invoices", InvoiceController.validateToken, InvoiceController.index);
   app.get("/api/invoices/:id", InvoiceController.validateToken, InvoiceController.indexOne);
-  app.get("/api/invoices/:status", InvoiceController.validateToken, InvoiceController.indexByStatus);
+  app.get("/api/invoices/status/:status", InvoiceController.validateToken, InvoiceController.indexByStatus);
   app.put("/api/invoices/:id", InvoiceController.validateToken, InvoiceController.updateInvoice);
   app.delete("/api/invoices/:id", InvoiceController.validateToken, InvoiceController.deleteInvoice);
 

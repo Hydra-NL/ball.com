@@ -71,30 +71,6 @@ module.exports = {
     }
   },
 
-  async createInvoice(data) {
-    const customerId = data.customerId;
-    const orderId = data.orderId;
-    const invoiceId = uuid.v4();
-    const invoiceStatus = "Unpaid";
-    const invoiceDate = new Date().toISOString().slice(0, 10);
-    const totalPrice = data.totalPrice;
-    console.log("Invoice created: " + invoiceId);
-    eventStoreManager.appendToStream(
-      `Invoice-${invoiceId}`,
-      "InvoiceCreated",
-      {
-        invoiceId,
-        customerId,
-        orderId,
-        invoiceStatus,
-        invoiceDate,
-        totalPrice
-      }
-    );
-    rabbitMQManager.addMessage("INSERT INTO Invoices (invoiceId, orderId, customerId, invoiceDate, totalPrice, status) VALUES ('" + invoiceId + "', '" + orderId + "', '" + customerId + "', '" + invoiceDate + "', '" + totalPrice + "', '" + invoiceStatus + "')");
-    return invoiceId;
-  },
-
   // updateInvoice
   updateInvoice(req, res, next) {
     const invoiceId = req.params.id;
@@ -103,7 +79,7 @@ module.exports = {
       .then((invoices) => {
         // if no invoices found, return message
         if (invoices.length == 0)
-          return res.status(404).json({ message: "No invoices found" });
+          return res.status(404).json({ message: "No invoice found" });
         // check if customer is same as customer in token
         if (invoices[0].customerId != req.customerId)
           return res.status(401).json({ message: "Unauthorized" });
@@ -124,6 +100,8 @@ module.exports = {
           rabbitMQManager.addMessage(
             `UPDATE Invoices SET status = '${invoiceStatus}' WHERE invoiceId = '${invoiceId}'`
           );
+          invoices[0].status = invoiceStatus;
+          return res.send({ message: "Successfully updated invoice", invoice: invoices[0] });
         }
       })
       .catch((err) => {

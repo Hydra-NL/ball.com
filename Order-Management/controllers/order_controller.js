@@ -122,6 +122,7 @@ module.exports = {
             {
               orderId,
               products: orderProps.products,
+              time: new Date.now()
             }
           );
           // update the order
