@@ -17,7 +17,7 @@ RabbitMQ is nu toegankelijk via http://localhost:15672 (web dashboard) en **rabb
 - Password: guest
 
 ### Event Store DB
-Event Store DB is nu toegankelijk via http://localhost:2113/web/index.html#/dashboard (web dashboarD) en **eventstoredb** wanneer je Event Store DB wilt bereiken via de API in Docker
+Event Store DB is nu toegankelijk via http://localhost:2113 (web dashboard) en **eventstoredb** wanneer je Event Store DB wilt bereiken via de API in Docker
 
 ### Management Services
 - Order Management: http://localhost:3000
