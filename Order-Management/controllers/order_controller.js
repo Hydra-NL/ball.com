@@ -122,6 +122,7 @@ module.exports = {
             {
               orderId,
               products: orderProps.products,
+              time: new Date.now()
             }
           );
           // update the order
@@ -165,10 +166,19 @@ module.exports = {
       })
       .catch((err) => {
         console.error(err);
+        eventStoreManager.appendToStream(
+          `Order-${orderId}`,
+          "OrderDeleted",
+          {
+            orderId,
+          }
+        );
         rabbitMQManager.addMessage(
           `DELETE FROM Orders WHERE orderId = '${orderId}'`
         );
-        next(err);
+        return res
+          .status(200)
+          .json({ message: "Successfully deleted order" });
       });
   },
 

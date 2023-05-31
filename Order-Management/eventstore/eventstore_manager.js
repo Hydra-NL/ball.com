@@ -13,8 +13,8 @@ async function subscribeToStream() {
     for await (const resolvedEvent of subscription) {
         const event = resolvedEvent.event;
         if (listenEvents.includes(event.type)) {
-            console.log(`Received event: ${event.type}`);
-            console.log(event.data);
+            // console.log(`Received event: ${event.type}`);
+            // console.log(event.data);
         }
     }
 }
